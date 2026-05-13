@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Monitor — Observability Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-hover: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --purple: #bc8cff;
+    --cyan: #39d2c0;
+    --bg-input: #0d1117;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  header .logo svg { width: 28px; height: 28px; }
+  header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #4393e6; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text); }
+
+  /* ── Layout ── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .stat-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .stat-trend {
+    font-size: 13px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .trend-up { color: var(--green); }
+  .trend-down { color: var(--red); }
+
+  /* ── Status badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-active { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-idle { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-error { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-active .badge-dot { background: var(--green); }
+  .badge-idle .badge-dot { background: var(--yellow); }
+  .badge-error .badge-dot { background: var(--red); }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 14px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+  }
+  tr:hover td { background: var(--bg-card-hover); }
+  .agent-name { font-weight: 600; }
+  .agent-model { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Activity Log ── */
+  .log-container {
+    max-height: 360px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .log-container::-webkit-scrollbar { width: 6px; }
+  .log-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .log-entry { display: flex; gap: 10px; padding: 2px 0; }
+  .log-time { color: var(--text-muted); flex-shrink: 0; }
+  .log-agent { color: var(--accent); flex-shrink: 0; min-width: 90px; }
+  .log-msg { color: var(--text); }
+  .log-entry.error .log-msg { color: var(--red); }
+  .log-entry.warn .log-msg { color: var(--yellow); }
+  .log-entry.success .log-msg { color: var(--green); }
+
+  /* ── Alerts ── */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .alert-warn { background: rgba(210,153,34,0.1); border: 1px solid rgba(210,153,34,0.3); }
+  .alert-error { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); }
+  .alert-info { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.3); }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Chart ── */
+  .chart-container { position: relative; width: 100%; height: 280px; }
+  .chart-filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .chart-filters button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chart-filters button.active,
+  .chart-filters button:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* ── Settings ── */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { font-size: 14px; font-weight: 500; }
+  .settings-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  input[type="number"], input[type="text"] {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    width: 160px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--accent); }
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    width: 480px;
+    max-width: 90vw;
+  }
+  .modal h3 { margin-bottom: 20px; font-size: 18px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .container { padding: 16px; }
+    header { padding: 12px 16px; }
+    .stat-value { font-size: 26px; }
+  }
+  @media (max-width: 600px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .stat-value { font-size: 22px; }
+    .chart-filters { flex-wrap: wrap; }
+  }
+
+  /* ── Animations ── */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: slideIn 0.3s ease-out; }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .progress-green { background: var(--green); }
+  .progress-yellow { background: var(--yellow); }
+  .progress-red { background: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+    AI Agent Monitor
+  </div>
+  <div class="header-right">
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);">
+      <div class="live-dot"></div>
+      Live
+    </div>
+    <button class="btn btn-ghost" onclick="openSettings()">⚙ Settings</button>
+    <button class="btn" onclick="exportData()">⬇ Export</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── Overview Stats ── -->
+  <div class="grid-4" id="statsGrid">
+    <div class="card animate-in">
+      <div class="card-title">Total Agents</div>
+      <div class="stat-value" id="totalAgents">0</div>
+      <div class="stat-sub">registered agents</div>
+      <div class="stat-trend trend-up" id="agentsTrend">↑ 2 this week</div>
+    </div>
+    <div class="card animate-in" style="animation-delay:.05s">
+      <div class="card-title">Active / Idle</div>
+      <div class="stat-value" id="activeIdle">0 / 0</div>
+      <div class="stat-sub">real-time status</div>
+      <div class="progress-bar"><div class="progress-fill progress-green" id="activeBar" style="width:0%"></div></div>
+    </div>
+    <div class="card animate-in" style="animation-delay:.1s">
+      <div class="card-title">Total Cost</div>
+      <div class="stat-value" id="totalCost">$0.00</div>
+      <div class="stat-sub" id="budgetSub">of $500.00 budget</div>
+      <div class="progress-bar"><div class="progress-fill" id="budgetBar" style="width:0%"></div></div>
+    </div>
+    <div class="card animate-in" style="animation-delay:.15s">
+      <div class="card-title">Avg Response Time</div>
+      <div class="stat-value" id="avgResponse">0ms</div>
+      <div class="stat-sub">last 24 hours</div>
+      <div class="stat-trend trend-down" id="respTrend">↓ 12% from yesterday</div>
+    </div>
+  </div>
+
+  <!-- ── Chart + Alerts ── -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="section-title">📊 Cost Analytics</div>
+      <div class="chart-filters">
+        <button class="active" onclick="setChartRange('daily',this)">Daily</button>
+        <button onclick="setChartRange('weekly',this)">Weekly</button>
+        <button onclick="setChartRange('monthly',this)">Monthly</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="costChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🔔 Alerts</div>
+      <div id="alertsPanel">
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <span>No alerts — all systems operational.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Agent List + Activity Log ── -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">🤖 Agent List</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Status</th>
+              <th>Last Activity</th>
+              <th>Calls</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody id="agentTable"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📋 Activity Log</div>
+      <div class="log-container" id="logContainer"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Settings Modal ── -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>⚙ Settings</h3>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Monthly Budget Limit ($)</div>
+        <div class="settings-desc">Alert when spending exceeds this amount</div>
+      </div>
+      <input type="number" id="budgetLimit" value="500" min="1">
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Cost Alert Threshold (%)</div>
+        <div class="settings-desc">Warn at this % of budget</div>
+      </div>
+      <input type="number" id="costThreshold" value="80" min="1" max="100">
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Error Alert Threshold</div>
+        <div class="settings-desc">Alert after N consecutive errors</div>
+      </div>
+      <input type="number" id="errorThreshold" value="3" min="1">
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Auto-refresh Interval (sec)</div>
+        <div class="settings-desc">Dashboard data refresh rate</div>
+      </div>
+      <input type="number" id="refreshInterval" value="5" min="1" max="60">
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Enable Sound Alerts</div>
+        <div class="settings-desc">Play sound on critical alerts</div>
+      </div>
+      <div class="toggle" id="soundToggle" onclick="toggleSwitch(this)"></div>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Dark Mode</div>
+        <div class="settings-desc">Always on 🌙</div>
+      </div>
+      <div class="toggle on" id="darkToggle" onclick="toggleSwitch(this)"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn" onclick="saveSettings()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════
+const AGENTS = [
+  { id: 1, name: 'Hermes-70B', model: 'Hermes-70B', status: 'active', calls: 12847, cost: 142.38, lastActivity: Date.now() - 30000 },
+  { id: 2, name: 'Codex-Reviewer', model: 'GPT-4o', status: 'active', calls: 8934, cost: 98.72, lastActivity: Date.now() - 120000 },
+  { id: 3, name: 'Skill-Finder', model: 'Claude-3.5', status: 'idle', calls: 5621, cost: 67.44, lastActivity: Date.now() - 600000 },
+  { id: 4, name: 'Memory-Bank', model: 'GPT-4o-mini', status: 'active', calls: 23456, cost: 45.12, lastActivity: Date.now() - 5000 },
+  { id: 5, name: 'Code-Reviewer', model: 'Gemini-1.5', status: 'error', calls: 3421, cost: 38.90, lastActivity: Date.now() - 1800000 },
+  { id: 6, name: 'Data-Analyzer', model: 'Claude-3.5', status: 'active', calls: 7890, cost: 89.55, lastActivity: Date.now() - 45000 },
+  { id: 7, name: 'Test-Runner', model: 'GPT-4o-mini', status: 'idle', calls: 4567, cost: 23.18, lastActivity: Date.now() - 900000 },
+  { id: 8, name: 'Deploy-Bot', model: 'Hermes-70B', status: 'active', calls: 2134, cost: 56.70, lastActivity: Date.now() - 200000 },
+];
+
+let settings = {
+  budgetLimit: 500,
+  costThreshold: 80,
+  errorThreshold: 3,
+  refreshInterval: 5,
+  soundAlerts: false,
+  darkMode: true,
+};
+
+let costChart;
+let chartRange = 'daily';
+let logEntries = [];
+let tickCount = 0;
+
+// ═══════════════════════════════════════════
+// CHART DATA GENERATORS
+// ═══════════════════════════════════════════
+function generateDailyData() {
+  const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
+    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
+    return {
+      label: agent.name,
+      data: Array.from({length: 24}, () => Math.random() * 3 + 0.2),
+      borderColor: colors[i],
+      backgroundColor: colors[i] + '20',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+    };
+  });
+  return { labels: hours, datasets };
+}
+
+function generateWeeklyData() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
+    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
+    return {
+      label: agent.name,
+      data: Array.from({length: 7}, () => Math.random() * 20 + 3),
+      borderColor: colors[i],
+      backgroundColor: colors[i] + '20',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2,
+      pointRadius: 3,
+    };
+  });
+  return { labels: days, datasets };
+}
+
+function generateMonthlyData() {
+  const weeks = ['Week 1','Week 2','Week 3','Week 4'];
+  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
+    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
+    return {
+      label: agent.name,
+      data: Array.from({length: 4}, () => Math.random() * 80 + 15),
+      borderColor: colors[i],
+      backgroundColor: colors[i] + '20',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2,
+      pointRadius: 4,
+    };
+  });
+  return { labels: weeks, datasets };
+}
+
+function getChartData() {
+  if (chartRange === 'daily') return generateDailyData();
+  if (chartRange === 'weekly') return generateWeeklyData();
+  return generateMonthlyData();
+}
+
+// ═══════════════════════════════════════════
+// INIT CHART
+// ═══════════════════════════════════════════
+function initChart() {
+  const ctx = document.getElementById('costChart').getContext('2d');
+  const data = getChartData();
+  costChart = new Chart(ctx, {
+    type: 'line',
+    data: data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#8b949e', font: { size: 11 }, padding: 12, usePointStyle: true, pointStyle: 'circle' }
+        },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#8b949e',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#8b949e', font: { size: 11 } },
+          grid: { color: 'rgba(48,54,61,0.4)' }
+        },
+        y: {
+          ticks: { color: '#8b949e', font: { size: 11 }, callback: v => '$' + v.toFixed(0) },
+          grid: { color: 'rgba(48,54,61,0.4)' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+function setChartRange(range, btn) {
+  chartRange = range;
+  document.querySelectorAll('.chart-filters button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const data = getChartData();
+  costChart.data = data;
+  costChart.update();
+}
+
+// ═══════════════════════════════════════════
+// RENDER STATS
+// ═══════════════════════════════════════════
+function renderStats() {
+  const total = AGENTS.length;
+  const active = AGENTS.filter(a => a.status === 'active').length;
+  const idle = AGENTS.filter(a => a.status === 'idle').length;
+  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
+  const avgResp = Math.floor(Math.random() * 150 + 120);
+
+  document.getElementById('totalAgents').textContent = total;
+  document.getElementById('activeIdle').textContent = `${active} / ${idle}`;
+  document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('budgetSub').textContent = `of $${settings.budgetLimit.toFixed(2)} budget`;
+  document.getElementById('avgResponse').textContent = avgResp + 'ms';
+
+  // Active bar
+  const activePct = total > 0 ? (active / total) * 100 : 0;
+  document.getElementById('activeBar').style.width = activePct + '%';
+
+  // Budget bar
+  const budgetPct = Math.min((totalCost / settings.budgetLimit) * 100, 100);
+  const budgetBar = document.getElementById('budgetBar');
+  budgetBar.style.width = budgetPct + '%';
+  budgetBar.className = 'progress-fill ' + (budgetPct > 80 ? 'progress-red' : budgetPct > 60 ? 'progress-yellow' : 'progress-green');
+
+  // Agents trend
+  document.getElementById('agentsTrend').textContent = `↑ ${Math.floor(Math.random()*3+1)} this week`;
+
+  // Response trend
+  document.getElementById('respTrend').textContent = `↓ ${Math.floor(Math.random()*15+5)}% from yesterday`;
+
+  return { totalCost, avgResp };
+}
+
+// ═══════════════════════════════════════════
+// RENDER AGENT TABLE
+// ═══════════════════════════════════════════
+function renderAgentTable() {
+  const tbody = document.getElementById('agentTable');
+  tbody.innerHTML = AGENTS.map(agent => {
+    const badgeClass = agent.status === 'active' ? 'badge-active' : agent.status === 'idle' ? 'badge-idle' : 'badge-error';
+    const timeAgo = timeSince(agent.lastActivity);
+    return `<tr>
+      <td>
+        <div class="agent-name">${agent.name}</div>
+        <div class="agent-model">${agent.model}</div>
+      </td>
+      <td><span class="badge ${badgeClass}"><span class="badge-dot"></span>${agent.status}</span></td>
+      <td style="color:var(--text-muted)">${timeAgo}</td>
+      <td>${agent.calls.toLocaleString()}</td>
+      <td style="font-weight:600">$${agent.cost.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// ACTIVITY LOG
+// ═══════════════════════════════════════════
+const LOG_MESSAGES = [
+  { agent: 'Hermes-70B', msg: 'Completed reasoning task in 1.2s', type: 'success' },
+  { agent: 'Codex-Reviewer', msg: 'Reviewed PR #482 — 3 issues found', type: 'info' },
+  { agent: 'Memory-Bank', msg: 'Stored 45 new embeddings', type: 'success' },
+  { agent: 'Code-Reviewer', msg: 'API timeout after 30s', type: 'error' },
+  { agent: 'Skill-Finder', msg: 'Discovered 2 new skills', type: 'success' },
+  { agent: 'Data-Analyzer', msg: 'Processed 10K rows in 3.4s', type: 'success' },
+  { agent: 'Deploy-Bot', msg: 'Deployed v2.1.3 to production', type: 'success' },
+  { agent: 'Test-Runner', msg: '142 tests passed, 0 failed', type: 'success' },
+  { agent: 'Hermes-70B', msg: 'Rate limit approaching (85%)', type: 'warn' },
+  { agent: 'Codex-Reviewer', msg: 'Analyzing code complexity…', type: 'info' },
+  { agent: 'Memory-Bank', msg: 'Cache hit ratio: 94.2%', type: 'info' },
+  { agent: 'Code-Reviewer', msg: 'Connection reset — retrying…', type: 'error' },
+  { agent: 'Data-Analyzer', msg: 'Warning: large payload (2.4MB)', type: 'warn' },
+  { agent: 'Deploy-Bot', msg: 'Rollback initiated for v2.1.2', type: 'warn' },
+  { agent: 'Test-Runner', msg: 'Flaky test detected: auth_flow', type: 'warn' },
+];
+
+function addLogEntry(forceMsg) {
+  const container = document.getElementById('logContainer');
+  const msg = forceMsg || LOG_MESSAGES[Math.floor(Math.random() * LOG_MESSAGES.length)];
+  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${msg.type}`;
+  entry.innerHTML = `<span class="log-time">${time}</span><span class="log-agent">${msg.agent}</span><span class="log-msg">${msg.msg}</span>`;
+  container.insertBefore(entry, container.firstChild);
+  logEntries.push({ time, ...msg });
+  if (container.children.length > 80) container.removeChild(container.lastChild);
+}
+
+// ═══════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════
+function checkAlerts(stats) {
+  const panel = document.getElementById('alertsPanel');
+  const alerts = [];
+
+  // Budget alert
+  const budgetPct = (stats.totalCost / settings.budgetLimit) * 100;
+  if (budgetPct >= settings.costThreshold) {
+    alerts.push({
+      type: budgetPct >= 100 ? 'error' : 'warn',
+      icon: budgetPct >= 100 ? '🚨' : '⚠️',
+      msg: `Cost at ${budgetPct.toFixed(1)}% of budget ($${stats.totalCost.toFixed(2)} / $${settings.budgetLimit.toFixed(2)})`
+    });
+  }
+
+  // Error agents
+  const errorAgents = AGENTS.filter(a => a.status === 'error');
+  if (errorAgents.length >= Math.floor(settings.errorThreshold / 2)) {
+    alerts.push({
+      type: 'error',
+      icon: '🔴',
+      msg: `${errorAgents.length} agent(s) in error state: ${errorAgents.map(a => a.name).join(', ')}`
+    });
+  }
+
+  // High response time
+  if (stats.avgResp > 250) {
+    alerts.push({
+      type: 'warn',
+      icon: '⏱',
+      msg: `High average response time: ${stats.avgResp}ms`
+    });
+  }
+
+  if (alerts.length === 0) {
+    panel.innerHTML = `<div class="alert alert-info"><span class="alert-icon">ℹ️</span><span>No alerts — all systems operational.</span></div>`;
+  } else {
+    panel.innerHTML = alerts.map(a =>
+      `<div class="alert alert-${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.msg}</span></div>`
+    ).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('show');
+  document.getElementById('budgetLimit').value = settings.budgetLimit;
+  document.getElementById('costThreshold').value = settings.costThreshold;
+  document.getElementById('errorThreshold').value = settings.errorThreshold;
+  document.getElementById('refreshInterval').value = settings.refreshInterval;
+  document.getElementById('soundToggle').className = 'toggle' + (settings.soundAlerts ? ' on' : '');
+  document.getElementById('darkToggle').className = 'toggle' + (settings.darkMode ? ' on' : '');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function saveSettings() {
+  settings.budgetLimit = parseFloat(document.getElementById('budgetLimit').value) || 500;
+  settings.costThreshold = parseInt(document.getElementById('costThreshold').value) || 80;
+  settings.errorThreshold = parseInt(document.getElementById('errorThreshold').value) || 3;
+  settings.refreshInterval = parseInt(document.getElementById('refreshInterval').value) || 5;
+  closeSettings();
+  renderStats();
+  checkAlerts({ totalCost: AGENTS.reduce((s, a) => s + a.cost, 0), avgResp: 180 });
+  addLogEntry({ agent: 'System', msg: 'Settings updated successfully', type: 'success' });
+}
+
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+  if (el.id === 'soundToggle') settings.soundAlerts = el.classList.contains('on');
+  if (el.id === 'darkToggle') settings.darkMode = el.classList.contains('on');
+}
+
+// ═══════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const data = { agents: AGENTS, settings, logEntries, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'agent-monitor-export.json'; a.click();
+  URL.revokeObjectURL(url);
+  addLogEntry({ agent: 'System', msg: 'Data exported to JSON', type: 'success' });
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function timeSince(ts) {
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  return Math.floor(sec / 86400) + 'd ago';
+}
+
+// ═══════════════════════════════════════════
+// SIMULATION LOOP
+// ═══════════════════════════════════════════
+function simulateTick() {
+  tickCount++;
+  // Randomly update agent data
+  AGENTS.forEach(agent => {
+    if (Math.random() < 0.3) {
+      agent.calls += Math.floor(Math.random() * 5);
+      agent.cost += Math.random() * 0.5;
+      agent.cost = Math.round(agent.cost * 100) / 100;
+      if (Math.random() < 0.4) agent.lastActivity = Date.now();
+    }
+    // Randomly change status occasionally
+    if (Math.random() < 0.02) {
+      const statuses = ['active', 'active', 'active', 'idle', 'error'];
+      agent.status = statuses[Math.floor(Math.random() * statuses.length)];
+    }
+  });
+
+  const stats = renderStats();
+  renderAgentTable();
+  checkAlerts(stats);
+
+  // Add log entry
+  if (tickCount % 2 === 0) addLogEntry();
+
+  // Update chart slightly
+  if (costChart && tickCount % 3 === 0) {
+    costChart.data.datasets.forEach(ds => {
+      ds.data = ds.data.map(v => Math.max(0.1, v + (Math.random() - 0.5) * 0.8));
+    });
+    costChart.update('none');
+  }
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  initChart();
+  renderStats();
+  renderAgentTable();
+
+  // Seed initial logs
+  for (let i = 0; i < 12; i++) addLogEntry();
+
+  const stats = renderStats();
+  checkAlerts(stats);
+
+  // Start simulation
+  setInterval(simulateTick, settings.refreshInterval * 1000);
+
+  // Close modal on outside click
+  document.getElementById('settingsModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSettings();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
