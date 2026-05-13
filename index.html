@@ -41,21 +41,29 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(8px);
   }
   header .logo {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
+    letter-spacing: -0.3px;
   }
-  header .logo svg { width: 28px; height: 28px; }
+  header .logo .icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
   header .header-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
-  .live-dot {
+  .status-dot {
     width: 8px; height: 8px;
     background: var(--green);
     border-radius: 50%;
@@ -66,74 +74,64 @@
     50% { opacity: 0.4; }
   }
   .btn {
-    background: var(--accent);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn:hover { background: #4393e6; }
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-muted);
+    background: var(--bg-card);
     border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
   }
-  .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text); }
+  .btn:hover { background: var(--bg-card-hover); border-color: var(--text-muted); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #4393e6; }
 
   /* ── Layout ── */
-  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
-  .grid-4 {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .grid-3 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
   }
 
-  /* ── Cards ── */
-  .card {
+  /* ── Stats Cards ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
-    transition: border-color 0.15s;
+    transition: border-color 0.2s;
   }
-  .card:hover { border-color: var(--accent); }
-  .card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
+  .stat-card:hover { border-color: var(--accent); }
+  .stat-card .label {
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
     margin-bottom: 8px;
   }
-  .stat-value {
-    font-size: 32px;
+  .stat-card .value {
+    font-size: 28px;
     font-weight: 700;
-    line-height: 1.1;
+    letter-spacing: -0.5px;
   }
-  .stat-sub {
-    font-size: 13px;
+  .stat-card .sub {
+    font-size: 12px;
     color: var(--text-muted);
     margin-top: 4px;
   }
-  .stat-trend {
-    font-size: 13px;
+  .stat-card .trend {
+    font-size: 12px;
     margin-top: 6px;
     display: flex;
     align-items: center;
@@ -142,213 +140,227 @@
   .trend-up { color: var(--green); }
   .trend-down { color: var(--red); }
 
-  /* ── Status badges ── */
-  .badge {
+  /* ── Main Grid ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1024px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-header h2 {
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { padding: 16px 20px; }
+
+  /* ── Agent Table ── */
+  .agent-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .agent-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .agent-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  }
+  .agent-table tr:last-child td { border-bottom: none; }
+  .agent-table tr:hover td { background: rgba(88, 166, 255, 0.04); }
+  .agent-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .agent-avatar {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .status-badge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
   }
-  .badge-active { background: rgba(63,185,80,0.15); color: var(--green); }
-  .badge-idle { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .badge-error { background: rgba(248,81,73,0.15); color: var(--red); }
-  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
-  .badge-active .badge-dot { background: var(--green); }
-  .badge-idle .badge-dot { background: var(--yellow); }
-  .badge-error .badge-dot { background: var(--red); }
+  .status-active { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .status-idle { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .status-error { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .status-dot-sm {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-active { background: var(--green); animation: pulse 2s infinite; }
+  .dot-idle { background: var(--yellow); }
+  .dot-error { background: var(--red); }
 
-  /* ── Table ── */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  th {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
+  /* ── Chart ── */
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 260px;
   }
-  td {
-    padding: 12px 14px;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(48,54,61,0.5);
-  }
-  tr:hover td { background: var(--bg-card-hover); }
-  .agent-name { font-weight: 600; }
-  .agent-model { font-size: 12px; color: var(--text-muted); }
 
   /* ── Activity Log ── */
-  .log-container {
-    max-height: 360px;
+  .activity-log {
+    max-height: 320px;
     overflow-y: auto;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    line-height: 1.8;
   }
-  .log-container::-webkit-scrollbar { width: 6px; }
-  .log-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  .log-entry { display: flex; gap: 10px; padding: 2px 0; }
-  .log-time { color: var(--text-muted); flex-shrink: 0; }
-  .log-agent { color: var(--accent); flex-shrink: 0; min-width: 90px; }
-  .log-msg { color: var(--text); }
-  .log-entry.error .log-msg { color: var(--red); }
-  .log-entry.warn .log-msg { color: var(--yellow); }
-  .log-entry.success .log-msg { color: var(--green); }
+  .activity-log::-webkit-scrollbar { width: 4px; }
+  .activity-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .log-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.3);
+    font-size: 12px;
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-time {
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .log-icon { flex-shrink: 0; }
+  .log-msg { flex: 1; line-height: 1.4; }
+  .log-agent { color: var(--accent); font-weight: 600; }
 
-  /* ── Alerts ── */
-  .alert {
+  /* ── Alert Panel ── */
+  .alert-item {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 8px;
     margin-bottom: 8px;
-    font-size: 13px;
-  }
-  .alert-warn { background: rgba(210,153,34,0.1); border: 1px solid rgba(210,153,34,0.3); }
-  .alert-error { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); }
-  .alert-info { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.3); }
-  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-  /* ── Chart ── */
-  .chart-container { position: relative; width: 100%; height: 280px; }
-  .chart-filters {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-  .chart-filters button {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 4px 12px;
-    border-radius: 6px;
     font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
+    line-height: 1.4;
   }
-  .chart-filters button.active,
-  .chart-filters button:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+  .alert-warning { background: rgba(210, 153, 34, 0.1); border: 1px solid rgba(210, 153, 34, 0.3); }
+  .alert-danger { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.3); }
+  .alert-info { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.3); }
+  .alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 
   /* ── Settings ── */
-  .settings-row {
+  .setting-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(48,54,61,0.5);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.3);
   }
-  .settings-row:last-child { border-bottom: none; }
-  .settings-label { font-size: 14px; font-weight: 500; }
-  .settings-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  input[type="number"], input[type="text"] {
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 13px; }
+  .setting-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .setting-input {
     background: var(--bg-input);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 6px;
     padding: 6px 10px;
-    font-size: 14px;
-    width: 160px;
-    outline: none;
-    transition: border-color 0.15s;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 120px;
+    text-align: right;
   }
-  input:focus { border-color: var(--accent); }
-  .toggle {
-    position: relative;
-    width: 44px; height: 24px;
-    background: var(--border);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-  .toggle.on { background: var(--green); }
-  .toggle::after {
-    content: '';
-    position: absolute;
-    top: 2px; left: 2px;
-    width: 20px; height: 20px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform 0.2s;
-  }
-  .toggle.on::after { transform: translateX(20px); }
+  .setting-input:focus { outline: none; border-color: var(--accent); }
 
-  /* ── Modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
+  /* ── Budget Bar ── */
+  .budget-bar-container {
+    margin-top: 16px;
   }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    width: 480px;
-    max-width: 90vw;
-  }
-  .modal h3 { margin-bottom: 20px; font-size: 18px; }
-
-  /* ── Responsive ── */
-  @media (max-width: 900px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .container { padding: 16px; }
-    header { padding: 12px 16px; }
-    .stat-value { font-size: 26px; }
-  }
-  @media (max-width: 600px) {
-    .grid-4 { grid-template-columns: 1fr 1fr; }
-    .stat-value { font-size: 22px; }
-    .chart-filters { flex-wrap: wrap; }
-  }
-
-  /* ── Animations ── */
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-in { animation: slideIn 0.3s ease-out; }
-
-  /* ── Section title ── */
-  .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 16px;
+  .budget-bar-label {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
   }
-
-  /* ── Progress bar ── */
-  .progress-bar {
-    height: 6px;
+  .budget-bar {
+    height: 8px;
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 4px;
     overflow: hidden;
-    margin-top: 8px;
   }
-  .progress-fill {
+  .budget-bar-fill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 4px;
     transition: width 0.5s ease;
   }
-  .progress-green { background: var(--green); }
-  .progress-yellow { background: var(--yellow); }
-  .progress-red { background: var(--red); }
+  .budget-safe { background: var(--green); }
+  .budget-warn { background: var(--yellow); }
+  .budget-danger { background: var(--red); }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 1000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    header { padding: 12px 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .agent-table { font-size: 12px; }
+    .agent-table th:nth-child(4), .agent-table td:nth-child(4),
+    .agent-table th:nth-child(5), .agent-table td:nth-child(5) { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -356,554 +368,459 @@
 <!-- ── Header ── -->
 <header>
   <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2">
-      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-      <path d="M2 17l10 5 10-5"/>
-      <path d="M2 12l10 5 10-5"/>
-    </svg>
-    AI Agent Monitor
+    <div class="icon">⚡</div>
+    <span>AI Agent Monitor</span>
   </div>
   <div class="header-right">
-    <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);">
-      <div class="live-dot"></div>
-      Live
-    </div>
-    <button class="btn btn-ghost" onclick="openSettings()">⚙ Settings</button>
-    <button class="btn" onclick="exportData()">⬇ Export</button>
+    <div class="status-dot"></div>
+    <span style="font-size:12px;color:var(--text-muted);" id="connectionStatus">Live</span>
+    <button class="btn btn-primary" onclick="openSettings()">⚙ Settings</button>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- ── Overview Stats ── -->
-  <div class="grid-4" id="statsGrid">
-    <div class="card animate-in">
-      <div class="card-title">Total Agents</div>
-      <div class="stat-value" id="totalAgents">0</div>
-      <div class="stat-sub">registered agents</div>
-      <div class="stat-trend trend-up" id="agentsTrend">↑ 2 this week</div>
+  <!-- ── Stats Cards ── -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Total Agents</div>
+      <div class="value" id="statTotalAgents">0</div>
+      <div class="sub">registered agents</div>
+      <div class="trend trend-up" id="trendAgents">↑ 2 this week</div>
     </div>
-    <div class="card animate-in" style="animation-delay:.05s">
-      <div class="card-title">Active / Idle</div>
-      <div class="stat-value" id="activeIdle">0 / 0</div>
-      <div class="stat-sub">real-time status</div>
-      <div class="progress-bar"><div class="progress-fill progress-green" id="activeBar" style="width:0%"></div></div>
+    <div class="stat-card">
+      <div class="label">Active / Idle</div>
+      <div class="value" id="statActiveIdle" style="font-size:22px;">0 / 0</div>
+      <div class="sub">real-time status</div>
+      <div class="trend trend-up" id="trendActive">↑ 15% utilization</div>
     </div>
-    <div class="card animate-in" style="animation-delay:.1s">
-      <div class="card-title">Total Cost</div>
-      <div class="stat-value" id="totalCost">$0.00</div>
-      <div class="stat-sub" id="budgetSub">of $500.00 budget</div>
-      <div class="progress-bar"><div class="progress-fill" id="budgetBar" style="width:0%"></div></div>
+    <div class="stat-card">
+      <div class="label">Total Cost</div>
+      <div class="value" id="statTotalCost">$0.00</div>
+      <div class="sub">this month</div>
+      <div class="trend trend-down" id="trendCost">↓ 8% vs last month</div>
     </div>
-    <div class="card animate-in" style="animation-delay:.15s">
-      <div class="card-title">Avg Response Time</div>
-      <div class="stat-value" id="avgResponse">0ms</div>
-      <div class="stat-sub">last 24 hours</div>
-      <div class="stat-trend trend-down" id="respTrend">↓ 12% from yesterday</div>
+    <div class="stat-card">
+      <div class="label">Avg Response Time</div>
+      <div class="value" id="statAvgTime">0ms</div>
+      <div class="sub">last 24 hours</div>
+      <div class="trend trend-up" id="trendTime">↓ 12% faster</div>
     </div>
   </div>
 
-  <!-- ── Chart + Alerts ── -->
-  <div class="grid-3">
-    <div class="card">
-      <div class="section-title">📊 Cost Analytics</div>
-      <div class="chart-filters">
-        <button class="active" onclick="setChartRange('daily',this)">Daily</button>
-        <button onclick="setChartRange('weekly',this)">Weekly</button>
-        <button onclick="setChartRange('monthly',this)">Monthly</button>
+  <!-- ── Main Grid: Agent List + Chart ── -->
+  <div class="main-grid">
+    <div>
+      <!-- Agent List -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2>🤖 Agent List</h2>
+          <button class="btn" onclick="refreshAgents()">↻ Refresh</button>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto;">
+          <table class="agent-table">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Status</th>
+                <th>Last Activity</th>
+                <th>Calls</th>
+                <th>Cost</th>
+              </tr>
+            </thead>
+            <tbody id="agentTableBody"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="chart-container">
-        <canvas id="costChart"></canvas>
+
+      <!-- Activity Log -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📋 Activity Log</h2>
+          <button class="btn" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="card-body">
+          <div class="activity-log" id="activityLog"></div>
+        </div>
       </div>
     </div>
-    <div class="card">
-      <div class="section-title">🔔 Alerts</div>
-      <div id="alertsPanel">
-        <div class="alert alert-info">
-          <span class="alert-icon">ℹ️</span>
-          <span>No alerts — all systems operational.</span>
+
+    <div>
+      <!-- Cost Chart -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2>📊 Cost Breakdown</h2>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="costChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Response Time Chart -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2>⏱ Response Time (ms)</h2>
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="height:200px;">
+            <canvas id="responseChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert Panel -->
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+          <h2>🔔 Alerts</h2>
+          <span id="alertCount" style="font-size:11px;color:var(--text-muted);background:var(--border);padding:2px 8px;border-radius:10px;">0</span>
+        </div>
+        <div class="card-body" id="alertPanel">
+          <div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">No alerts — all systems nominal</div>
+        </div>
+      </div>
+
+      <!-- Settings / Budget -->
+      <div class="card" id="settingsCard">
+        <div class="card-header">
+          <h2>💰 Budget Settings</h2>
+        </div>
+        <div class="card-body">
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Monthly Budget Limit</div>
+              <div class="setting-desc">Alert when spending exceeds this</div>
+            </div>
+            <input type="number" class="setting-input" id="budgetInput" value="500" onchange="updateBudget(this.value)">
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">Alert Threshold</div>
+              <div class="setting-desc">Warn at % of budget</div>
+            </div>
+            <input type="number" class="setting-input" id="thresholdInput" value="80" onchange="updateThreshold(this.value)">
+          </div>
+          <div class="budget-bar-container">
+            <div class="budget-bar-label">
+              <span style="color:var(--text-muted);">Spent: <span id="budgetSpent">$0.00</span></span>
+              <span style="color:var(--text-muted);">Limit: <span id="budgetLimit">$500</span></span>
+            </div>
+            <div class="budget-bar">
+              <div class="budget-bar-fill budget-safe" id="budgetBarFill" style="width:0%"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- ── Agent List + Activity Log ── -->
-  <div class="grid-2">
-    <div class="card">
-      <div class="section-title">🤖 Agent List</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Agent</th>
-              <th>Status</th>
-              <th>Last Activity</th>
-              <th>Calls</th>
-              <th>Cost</th>
-            </tr>
-          </thead>
-          <tbody id="agentTable"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">📋 Activity Log</div>
-      <div class="log-container" id="logContainer"></div>
-    </div>
-  </div>
-
 </div>
 
-<!-- ── Settings Modal ── -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal">
-    <h3>⚙ Settings</h3>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Monthly Budget Limit ($)</div>
-        <div class="settings-desc">Alert when spending exceeds this amount</div>
-      </div>
-      <input type="number" id="budgetLimit" value="500" min="1">
-    </div>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Cost Alert Threshold (%)</div>
-        <div class="settings-desc">Warn at this % of budget</div>
-      </div>
-      <input type="number" id="costThreshold" value="80" min="1" max="100">
-    </div>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Error Alert Threshold</div>
-        <div class="settings-desc">Alert after N consecutive errors</div>
-      </div>
-      <input type="number" id="errorThreshold" value="3" min="1">
-    </div>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Auto-refresh Interval (sec)</div>
-        <div class="settings-desc">Dashboard data refresh rate</div>
-      </div>
-      <input type="number" id="refreshInterval" value="5" min="1" max="60">
-    </div>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Enable Sound Alerts</div>
-        <div class="settings-desc">Play sound on critical alerts</div>
-      </div>
-      <div class="toggle" id="soundToggle" onclick="toggleSwitch(this)"></div>
-    </div>
-    <div class="settings-row">
-      <div>
-        <div class="settings-label">Dark Mode</div>
-        <div class="settings-desc">Always on 🌙</div>
-      </div>
-      <div class="toggle on" id="darkToggle" onclick="toggleSwitch(this)"></div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
-      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
-      <button class="btn" onclick="saveSettings()">Save Changes</button>
-    </div>
-  </div>
-</div>
+<!-- ── Footer ── -->
+<footer>
+  AI Agent Monitor v1.0 — Built with ❤ for AI Observability — <span style="color:var(--accent);">github.com/*/agent-monitor</span>
+</footer>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════════
-// DATA & STATE
+// DATA
 // ═══════════════════════════════════════════
 const AGENTS = [
-  { id: 1, name: 'Hermes-70B', model: 'Hermes-70B', status: 'active', calls: 12847, cost: 142.38, lastActivity: Date.now() - 30000 },
-  { id: 2, name: 'Codex-Reviewer', model: 'GPT-4o', status: 'active', calls: 8934, cost: 98.72, lastActivity: Date.now() - 120000 },
-  { id: 3, name: 'Skill-Finder', model: 'Claude-3.5', status: 'idle', calls: 5621, cost: 67.44, lastActivity: Date.now() - 600000 },
-  { id: 4, name: 'Memory-Bank', model: 'GPT-4o-mini', status: 'active', calls: 23456, cost: 45.12, lastActivity: Date.now() - 5000 },
-  { id: 5, name: 'Code-Reviewer', model: 'Gemini-1.5', status: 'error', calls: 3421, cost: 38.90, lastActivity: Date.now() - 1800000 },
-  { id: 6, name: 'Data-Analyzer', model: 'Claude-3.5', status: 'active', calls: 7890, cost: 89.55, lastActivity: Date.now() - 45000 },
-  { id: 7, name: 'Test-Runner', model: 'GPT-4o-mini', status: 'idle', calls: 4567, cost: 23.18, lastActivity: Date.now() - 900000 },
-  { id: 8, name: 'Deploy-Bot', model: 'Hermes-70B', status: 'active', calls: 2134, cost: 56.70, lastActivity: Date.now() - 200000 },
+  { name: 'Hermes-7B',    role: 'General Purpose', color: '#58a6ff', status: 'active',  lastActivity: '2 sec ago',  calls: 12847, cost: 142.30 },
+  { name: 'Codex-Agent',  role: 'Code Review',     color: '#3fb950', status: 'active',  lastActivity: '5 sec ago',  calls: 8932,  cost: 98.75  },
+  { name: 'Memory-Pal',   role: 'Memory Mgmt',     color: '#bc8cff', status: 'idle',    lastActivity: '3 min ago',  calls: 5621,  cost: 67.20  },
+  { name: 'Skill-Runner', role: 'Skill Execution', color: '#d29922', status: 'active',  lastActivity: '1 sec ago',  calls: 15203, cost: 178.50 },
+  { name: 'Review-Bot',   role: 'PR Review',       color: '#f85149', status: 'error',   lastActivity: '12 min ago', calls: 3401,  cost: 45.80  },
+  { name: 'Data-Miner',   role: 'Data Analysis',   color: '#39d2c0', status: 'idle',    lastActivity: '8 min ago',  calls: 7890,  cost: 89.15  },
+  { name: 'Chat-Model',   role: 'Conversation',    color: '#db6d28', status: 'active',  lastActivity: '0 sec ago',  calls: 21034, cost: 245.60 },
+  { name: 'Test-Gen',     role: 'Test Generation', color: '#58a6ff', status: 'idle',    lastActivity: '15 min ago', calls: 2108,  cost: 28.40  },
 ];
 
-let settings = {
-  budgetLimit: 500,
-  costThreshold: 80,
-  errorThreshold: 3,
-  refreshInterval: 5,
-  soundAlerts: false,
-  darkMode: true,
+const COST_HISTORY = {
+  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+  data: [312, 428, 389, 521],
 };
 
-let costChart;
-let chartRange = 'daily';
-let logEntries = [];
-let tickCount = 0;
+const RESPONSE_HISTORY = {
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  data: [340, 290, 310, 275, 250, 220, 205],
+};
+
+let alerts = [];
+let budgetLimit = 500;
+let alertThreshold = 80;
 
 // ═══════════════════════════════════════════
-// CHART DATA GENERATORS
+// CHARTS
 // ═══════════════════════════════════════════
-function generateDailyData() {
-  const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
-  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
-    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
-    return {
-      label: agent.name,
-      data: Array.from({length: 24}, () => Math.random() * 3 + 0.2),
-      borderColor: colors[i],
-      backgroundColor: colors[i] + '20',
-      fill: true,
-      tension: 0.4,
-      borderWidth: 2,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-    };
-  });
-  return { labels: hours, datasets };
-}
+function initCharts() {
+  Chart.defaults.color = '#8b949e';
+  Chart.defaults.borderColor = '#30363d';
 
-function generateWeeklyData() {
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
-    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
-    return {
-      label: agent.name,
-      data: Array.from({length: 7}, () => Math.random() * 20 + 3),
-      borderColor: colors[i],
-      backgroundColor: colors[i] + '20',
-      fill: true,
-      tension: 0.4,
-      borderWidth: 2,
-      pointRadius: 3,
-    };
-  });
-  return { labels: days, datasets };
-}
-
-function generateMonthlyData() {
-  const weeks = ['Week 1','Week 2','Week 3','Week 4'];
-  const datasets = AGENTS.slice(0, 5).map((agent, i) => {
-    const colors = ['#58a6ff','#3fb950','#bc8cff','#f85149','#d29922'];
-    return {
-      label: agent.name,
-      data: Array.from({length: 4}, () => Math.random() * 80 + 15),
-      borderColor: colors[i],
-      backgroundColor: colors[i] + '20',
-      fill: true,
-      tension: 0.4,
-      borderWidth: 2,
-      pointRadius: 4,
-    };
-  });
-  return { labels: weeks, datasets };
-}
-
-function getChartData() {
-  if (chartRange === 'daily') return generateDailyData();
-  if (chartRange === 'weekly') return generateWeeklyData();
-  return generateMonthlyData();
-}
-
-// ═══════════════════════════════════════════
-// INIT CHART
-// ═══════════════════════════════════════════
-function initChart() {
-  const ctx = document.getElementById('costChart').getContext('2d');
-  const data = getChartData();
-  costChart = new Chart(ctx, {
-    type: 'line',
-    data: data,
+  // Cost Doughnut
+  new Chart(document.getElementById('costChart'), {
+    type: 'doughnut',
+    data: {
+      labels: AGENTS.map(a => a.name),
+      datasets: [{
+        data: AGENTS.map(a => a.cost),
+        backgroundColor: AGENTS.map(a => a.color + 'cc'),
+        borderColor: AGENTS.map(a => a.color),
+        borderWidth: 1,
+      }]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {
-          position: 'bottom',
-          labels: { color: '#8b949e', font: { size: 11 }, padding: 12, usePointStyle: true, pointStyle: 'circle' }
-        },
-        tooltip: {
-          backgroundColor: '#161b22',
-          titleColor: '#e6edf3',
-          bodyColor: '#8b949e',
-          borderColor: '#30363d',
-          borderWidth: 1,
-          padding: 10,
-          callbacks: { label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
+          position: 'right',
+          labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
         }
       },
+      cutout: '60%',
+    }
+  });
+
+  // Response Time Line
+  new Chart(document.getElementById('responseChart'), {
+    type: 'line',
+    data: {
+      labels: RESPONSE_HISTORY.labels,
+      datasets: [{
+        label: 'Avg ms',
+        data: RESPONSE_HISTORY.data,
+        borderColor: '#58a6ff',
+        backgroundColor: 'rgba(88,166,255,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
       scales: {
-        x: {
-          ticks: { color: '#8b949e', font: { size: 11 } },
-          grid: { color: 'rgba(48,54,61,0.4)' }
-        },
-        y: {
-          ticks: { color: '#8b949e', font: { size: 11 }, callback: v => '$' + v.toFixed(0) },
-          grid: { color: 'rgba(48,54,61,0.4)' },
-          beginAtZero: true
-        }
+        y: { beginAtZero: false, grid: { color: 'rgba(48,54,61,0.5)' } },
+        x: { grid: { display: false } }
       }
     }
   });
 }
 
-function setChartRange(range, btn) {
-  chartRange = range;
-  document.querySelectorAll('.chart-filters button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const data = getChartData();
-  costChart.data = data;
-  costChart.update();
-}
-
 // ═══════════════════════════════════════════
-// RENDER STATS
+// RENDER
 // ═══════════════════════════════════════════
 function renderStats() {
   const total = AGENTS.length;
   const active = AGENTS.filter(a => a.status === 'active').length;
   const idle = AGENTS.filter(a => a.status === 'idle').length;
   const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
-  const avgResp = Math.floor(Math.random() * 150 + 120);
+  const avgTime = Math.round(RESPONSE_HISTORY.data.reduce((s, v) => s + v, 0) / RESPONSE_HISTORY.data.length);
 
-  document.getElementById('totalAgents').textContent = total;
-  document.getElementById('activeIdle').textContent = `${active} / ${idle}`;
-  document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(2);
-  document.getElementById('budgetSub').textContent = `of $${settings.budgetLimit.toFixed(2)} budget`;
-  document.getElementById('avgResponse').textContent = avgResp + 'ms';
+  document.getElementById('statTotalAgents').textContent = total;
+  document.getElementById('statActiveIdle').innerHTML = `<span style="color:var(--green)">${active}</span> / <span style="color:var(--yellow)">${idle}</span>`;
+  document.getElementById('statTotalCost').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('statAvgTime').textContent = avgTime + 'ms';
 
-  // Active bar
-  const activePct = total > 0 ? (active / total) * 100 : 0;
-  document.getElementById('activeBar').style.width = activePct + '%';
-
-  // Budget bar
-  const budgetPct = Math.min((totalCost / settings.budgetLimit) * 100, 100);
-  const budgetBar = document.getElementById('budgetBar');
-  budgetBar.style.width = budgetPct + '%';
-  budgetBar.className = 'progress-fill ' + (budgetPct > 80 ? 'progress-red' : budgetPct > 60 ? 'progress-yellow' : 'progress-green');
-
-  // Agents trend
-  document.getElementById('agentsTrend').textContent = `↑ ${Math.floor(Math.random()*3+1)} this week`;
-
-  // Response trend
-  document.getElementById('respTrend').textContent = `↓ ${Math.floor(Math.random()*15+5)}% from yesterday`;
-
-  return { totalCost, avgResp };
+  updateBudgetBar(totalCost);
 }
 
-// ═══════════════════════════════════════════
-// RENDER AGENT TABLE
-// ═══════════════════════════════════════════
-function renderAgentTable() {
-  const tbody = document.getElementById('agentTable');
-  tbody.innerHTML = AGENTS.map(agent => {
-    const badgeClass = agent.status === 'active' ? 'badge-active' : agent.status === 'idle' ? 'badge-idle' : 'badge-error';
-    const timeAgo = timeSince(agent.lastActivity);
-    return `<tr>
+function renderAgents() {
+  const tbody = document.getElementById('agentTableBody');
+  tbody.innerHTML = AGENTS.map(a => `
+    <tr>
       <td>
-        <div class="agent-name">${agent.name}</div>
-        <div class="agent-model">${agent.model}</div>
+        <div class="agent-name">
+          <div class="agent-avatar" style="background:${a.color}">${a.name[0]}</div>
+          <div>
+            <div style="font-weight:600">${a.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${a.role}</div>
+          </div>
+        </div>
       </td>
-      <td><span class="badge ${badgeClass}"><span class="badge-dot"></span>${agent.status}</span></td>
-      <td style="color:var(--text-muted)">${timeAgo}</td>
-      <td>${agent.calls.toLocaleString()}</td>
-      <td style="font-weight:600">$${agent.cost.toFixed(2)}</td>
-    </tr>`;
-  }).join('');
+      <td><span class="status-badge status-${a.status}"><span class="status-dot-sm dot-${a.status}"></span>${a.status}</span></td>
+      <td style="color:var(--text-muted)">${a.lastActivity}</td>
+      <td>${a.calls.toLocaleString()}</td>
+      <td style="font-weight:600">$${a.cost.toFixed(2)}</td>
+    </tr>
+  `).join('');
 }
 
-// ═══════════════════════════════════════════
-// ACTIVITY LOG
-// ═══════════════════════════════════════════
-const LOG_MESSAGES = [
-  { agent: 'Hermes-70B', msg: 'Completed reasoning task in 1.2s', type: 'success' },
-  { agent: 'Codex-Reviewer', msg: 'Reviewed PR #482 — 3 issues found', type: 'info' },
-  { agent: 'Memory-Bank', msg: 'Stored 45 new embeddings', type: 'success' },
-  { agent: 'Code-Reviewer', msg: 'API timeout after 30s', type: 'error' },
-  { agent: 'Skill-Finder', msg: 'Discovered 2 new skills', type: 'success' },
-  { agent: 'Data-Analyzer', msg: 'Processed 10K rows in 3.4s', type: 'success' },
-  { agent: 'Deploy-Bot', msg: 'Deployed v2.1.3 to production', type: 'success' },
-  { agent: 'Test-Runner', msg: '142 tests passed, 0 failed', type: 'success' },
-  { agent: 'Hermes-70B', msg: 'Rate limit approaching (85%)', type: 'warn' },
-  { agent: 'Codex-Reviewer', msg: 'Analyzing code complexity…', type: 'info' },
-  { agent: 'Memory-Bank', msg: 'Cache hit ratio: 94.2%', type: 'info' },
-  { agent: 'Code-Reviewer', msg: 'Connection reset — retrying…', type: 'error' },
-  { agent: 'Data-Analyzer', msg: 'Warning: large payload (2.4MB)', type: 'warn' },
-  { agent: 'Deploy-Bot', msg: 'Rollback initiated for v2.1.2', type: 'warn' },
-  { agent: 'Test-Runner', msg: 'Flaky test detected: auth_flow', type: 'warn' },
-];
+function renderAlerts() {
+  const panel = document.getElementById('alertPanel');
+  document.getElementById('alertCount').textContent = alerts.length;
 
-function addLogEntry(forceMsg) {
-  const container = document.getElementById('logContainer');
-  const msg = forceMsg || LOG_MESSAGES[Math.floor(Math.random() * LOG_MESSAGES.length)];
-  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-  const entry = document.createElement('div');
-  entry.className = `log-entry ${msg.type}`;
-  entry.innerHTML = `<span class="log-time">${time}</span><span class="log-agent">${msg.agent}</span><span class="log-msg">${msg.msg}</span>`;
-  container.insertBefore(entry, container.firstChild);
-  logEntries.push({ time, ...msg });
-  if (container.children.length > 80) container.removeChild(container.lastChild);
+  if (alerts.length === 0) {
+    panel.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">No alerts — all systems nominal</div>';
+    return;
+  }
+  panel.innerHTML = alerts.map(a => `
+    <div class="alert-item alert-${a.type}">
+      <span class="alert-icon">${a.icon}</span>
+      <div>${a.msg}</div>
+    </div>
+  `).join('');
+}
+
+function addLog(icon, agent, msg) {
+  const log = document.getElementById('activityLog');
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US', { hour12: false });
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-icon">${icon}</span>
+    <span class="log-msg"><span class="log-agent">${agent}</span> — ${msg}</span>
+  `;
+  log.insertBefore(item, log.firstChild);
+  if (log.children.length > 50) log.removeChild(log.lastChild);
+}
+
+function clearLog() {
+  document.getElementById('activityLog').innerHTML = '';
+  addLog('🧹', 'System', 'Activity log cleared');
 }
 
 // ═══════════════════════════════════════════
 // ALERTS
 // ═══════════════════════════════════════════
-function checkAlerts(stats) {
-  const panel = document.getElementById('alertsPanel');
-  const alerts = [];
+function checkAlerts() {
+  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
+  const pct = (totalCost / budgetLimit) * 100;
 
-  // Budget alert
-  const budgetPct = (stats.totalCost / settings.budgetLimit) * 100;
-  if (budgetPct >= settings.costThreshold) {
-    alerts.push({
-      type: budgetPct >= 100 ? 'error' : 'warn',
-      icon: budgetPct >= 100 ? '🚨' : '⚠️',
-      msg: `Cost at ${budgetPct.toFixed(1)}% of budget ($${stats.totalCost.toFixed(2)} / $${settings.budgetLimit.toFixed(2)})`
-    });
+  alerts = [];
+
+  if (pct >= alertThreshold && pct < 100) {
+    alerts.push({ type: 'warning', icon: '⚠️', msg: `Budget at ${pct.toFixed(0)}% — $${totalCost.toFixed(2)} of $${budgetLimit}` });
+  }
+  if (pct >= 100) {
+    alerts.push({ type: 'danger', icon: '🚨', msg: `Budget exceeded! $${totalCost.toFixed(2)} of $${budgetLimit}` });
   }
 
-  // Error agents
-  const errorAgents = AGENTS.filter(a => a.status === 'error');
-  if (errorAgents.length >= Math.floor(settings.errorThreshold / 2)) {
-    alerts.push({
-      type: 'error',
-      icon: '🔴',
-      msg: `${errorAgents.length} agent(s) in error state: ${errorAgents.map(a => a.name).join(', ')}`
-    });
-  }
-
-  // High response time
-  if (stats.avgResp > 250) {
-    alerts.push({
-      type: 'warn',
-      icon: '⏱',
-      msg: `High average response time: ${stats.avgResp}ms`
-    });
-  }
-
-  if (alerts.length === 0) {
-    panel.innerHTML = `<div class="alert alert-info"><span class="alert-icon">ℹ️</span><span>No alerts — all systems operational.</span></div>`;
-  } else {
-    panel.innerHTML = alerts.map(a =>
-      `<div class="alert alert-${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.msg}</span></div>`
-    ).join('');
-  }
-}
-
-// ═══════════════════════════════════════════
-// SETTINGS
-// ═══════════════════════════════════════════
-function openSettings() {
-  document.getElementById('settingsModal').classList.add('show');
-  document.getElementById('budgetLimit').value = settings.budgetLimit;
-  document.getElementById('costThreshold').value = settings.costThreshold;
-  document.getElementById('errorThreshold').value = settings.errorThreshold;
-  document.getElementById('refreshInterval').value = settings.refreshInterval;
-  document.getElementById('soundToggle').className = 'toggle' + (settings.soundAlerts ? ' on' : '');
-  document.getElementById('darkToggle').className = 'toggle' + (settings.darkMode ? ' on' : '');
-}
-
-function closeSettings() {
-  document.getElementById('settingsModal').classList.remove('show');
-}
-
-function saveSettings() {
-  settings.budgetLimit = parseFloat(document.getElementById('budgetLimit').value) || 500;
-  settings.costThreshold = parseInt(document.getElementById('costThreshold').value) || 80;
-  settings.errorThreshold = parseInt(document.getElementById('errorThreshold').value) || 3;
-  settings.refreshInterval = parseInt(document.getElementById('refreshInterval').value) || 5;
-  closeSettings();
-  renderStats();
-  checkAlerts({ totalCost: AGENTS.reduce((s, a) => s + a.cost, 0), avgResp: 180 });
-  addLogEntry({ agent: 'System', msg: 'Settings updated successfully', type: 'success' });
-}
-
-function toggleSwitch(el) {
-  el.classList.toggle('on');
-  if (el.id === 'soundToggle') settings.soundAlerts = el.classList.contains('on');
-  if (el.id === 'darkToggle') settings.darkMode = el.classList.contains('on');
-}
-
-// ═══════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════
-function exportData() {
-  const data = { agents: AGENTS, settings, logEntries, exportedAt: new Date().toISOString() };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'agent-monitor-export.json'; a.click();
-  URL.revokeObjectURL(url);
-  addLogEntry({ agent: 'System', msg: 'Data exported to JSON', type: 'success' });
-}
-
-// ═══════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════
-function timeSince(ts) {
-  const sec = Math.floor((Date.now() - ts) / 1000);
-  if (sec < 60) return sec + 's ago';
-  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
-  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
-  return Math.floor(sec / 86400) + 'd ago';
-}
-
-// ═══════════════════════════════════════════
-// SIMULATION LOOP
-// ═══════════════════════════════════════════
-function simulateTick() {
-  tickCount++;
-  // Randomly update agent data
-  AGENTS.forEach(agent => {
-    if (Math.random() < 0.3) {
-      agent.calls += Math.floor(Math.random() * 5);
-      agent.cost += Math.random() * 0.5;
-      agent.cost = Math.round(agent.cost * 100) / 100;
-      if (Math.random() < 0.4) agent.lastActivity = Date.now();
-    }
-    // Randomly change status occasionally
-    if (Math.random() < 0.02) {
-      const statuses = ['active', 'active', 'active', 'idle', 'error'];
-      agent.status = statuses[Math.floor(Math.random() * statuses.length)];
-    }
+  AGENTS.filter(a => a.status === 'error').forEach(a => {
+    alerts.push({ type: 'danger', icon: '🔴', msg: `<b>${a.name}</b> is in error state — last seen ${a.lastActivity}` });
   });
 
-  const stats = renderStats();
-  renderAgentTable();
-  checkAlerts(stats);
-
-  // Add log entry
-  if (tickCount % 2 === 0) addLogEntry();
-
-  // Update chart slightly
-  if (costChart && tickCount % 3 === 0) {
-    costChart.data.datasets.forEach(ds => {
-      ds.data = ds.data.map(v => Math.max(0.1, v + (Math.random() - 0.5) * 0.8));
-    });
-    costChart.update('none');
+  const highCost = AGENTS.filter(a => a.cost > 150);
+  if (highCost.length > 0) {
+    alerts.push({ type: 'info', icon: '💡', msg: `${highCost.length} agent(s) exceeded $150 this period` });
   }
+
+  renderAlerts();
+}
+
+// ═══════════════════════════════════════════
+// BUDGET
+// ═══════════════════════════════════════════
+function updateBudget(val) {
+  budgetLimit = parseFloat(val) || 500;
+  document.getElementById('budgetLimit').textContent = '$' + budgetLimit;
+  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
+  updateBudgetBar(totalCost);
+  checkAlerts();
+  showToast(`Budget limit set to $${budgetLimit}`);
+}
+
+function updateThreshold(val) {
+  alertThreshold = parseFloat(val) || 80;
+  checkAlerts();
+  showToast(`Alert threshold set to ${alertThreshold}%`);
+}
+
+function updateBudgetBar(totalCost) {
+  const pct = Math.min((totalCost / budgetLimit) * 100, 100);
+  const fill = document.getElementById('budgetBarFill');
+  document.getElementById('budgetSpent').textContent = '$' + totalCost.toFixed(2);
+  fill.style.width = pct + '%';
+  fill.className = 'budget-bar-fill ' + (pct >= 100 ? 'budget-danger' : pct >= alertThreshold ? 'budget-warn' : 'budget-safe');
+}
+
+// ═══════════════════════════════════════════
+// SIMULATION
+// ═══════════════════════════════════════════
+function simulateActivity() {
+  const actions = [
+    { icon: '✅', msg: 'completed task successfully' },
+    { icon: '🔄', msg: 'processing new request' },
+    { icon: '📤', msg: 'sent API response' },
+    { icon: '🧠', msg: 'updated context memory' },
+    { icon: '🔍', msg: 'analyzed input data' },
+    { icon: '📊', msg: 'generated report' },
+    { icon: '💬', msg: 'handled user message' },
+    { icon: '🔧', msg: 'executed tool call' },
+  ];
+
+  const agent = AGENTS[Math.floor(Math.random() * AGENTS.length)];
+  const action = actions[Math.floor(Math.random() * actions.length)];
+  addLog(action.icon, agent.name, action.msg);
+
+  // Randomly update last activity
+  agent.lastActivity = Math.floor(Math.random() * 5) + ' sec ago';
+}
+
+function refreshAgents() {
+  AGENTS.forEach(a => {
+    const r = Math.random();
+    if (r < 0.6) a.status = 'active';
+    else if (r < 0.9) a.status = 'idle';
+    else a.status = 'error';
+    a.calls += Math.floor(Math.random() * 10);
+    a.cost += Math.random() * 2;
+  });
+  renderStats();
+  renderAgents();
+  checkAlerts();
+  showToast('Agent data refreshed');
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openSettings() {
+  document.getElementById('settingsCard').scrollIntoView({ behavior: 'smooth' });
+  showToast('Settings panel');
 }
 
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 function init() {
-  initChart();
+  initCharts();
   renderStats();
-  renderAgentTable();
+  renderAgents();
+  checkAlerts();
 
   // Seed initial logs
-  for (let i = 0; i < 12; i++) addLogEntry();
+  addLog('🚀', 'System', 'AI Agent Monitor initialized');
+  addLog('📡', 'System', 'Connected to agent orchestrator');
+  addLog('💰', 'System', `Budget limit set to $${budgetLimit}, threshold ${alertThreshold}%`);
 
-  const stats = renderStats();
-  checkAlerts(stats);
+  // Simulate live activity every 3s
+  setInterval(simulateActivity, 3000);
 
-  // Start simulation
-  setInterval(simulateTick, settings.refreshInterval * 1000);
-
-  // Close modal on outside click
-  document.getElementById('settingsModal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeSettings();
-  });
+  // Refresh stats every 10s
+  setInterval(() => {
+    AGENTS.forEach(a => { a.cost += Math.random() * 0.5; });
+    renderStats();
+    checkAlerts();
+  }, 10000);
 }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

@@ -1,102 +1,90 @@
-# 🤖 AI Agent Monitor
+# ⚡ AI Agent Monitor
 
-> **Observability dashboard for AI agents** — monitor activity, costs, performance, and alerts in real-time.
+> **Observability dashboard for AI agent activity** — track costs, response times, agent status, and alerts in real time.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://yourusername.github.io/agent-monitor/)
+![Dark Theme](https://img.shields.io/badge/theme-dark-1a1a2e?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
 
 ## ✨ Features
 
-- **📊 Dashboard Overview** — Total agents, active/idle status, total cost, and average response time at a glance
-- **🤖 Agent List** — Detailed table with agent name, status (active/idle/error), last activity, total calls, and cost
-- **📈 Cost Analytics** — Interactive Chart.js charts with daily/weekly/monthly spending per agent
-- **📋 Activity Log** — Real-time scrolling log of all agent activities with color-coded severity
-- **🔔 Alert Panel** — Automatic warnings when cost exceeds budget thresholds or agents enter error state
-- **⚙ Settings** — Configurable budget limits, alert thresholds, refresh intervals, and sound alerts
-- **⬇ Export** — Download all data as JSON for external analysis
-- **🌙 Dark Theme** — Beautiful dark UI, fully responsive across all devices
-
-## 🖼 Screenshots
-
-![Dashboard Overview](https://placehold.co/1200x600/0d1117/58a6ff?text=Dashboard+Overview)
-![Agent List & Activity Log](https://placehold.co/1200x600/0d1117/3fb950?text=Agent+List+%26+Activity+Log)
-![Cost Chart & Alerts](https://placehold.co/1200x600/0d1117/bc8cff?text=Cost+Chart+%26+Alerts)
+| Feature | Description |
+|---------|-------------|
+| 📊 **Dashboard** | Total agents, active/idle count, total cost, avg response time |
+| 🤖 **Agent List** | Name, status, last activity, call count, cost per agent |
+| 📈 **Cost Chart** | Interactive doughnut chart (Chart.js) showing cost breakdown |
+| ⏱ **Response Time Chart** | Line chart tracking avg response time over days |
+| 📋 **Activity Log** | Real-time streaming log of agent actions |
+| 🔔 **Alert Panel** | Budget warnings, error state alerts, high-cost notifications |
+| 💰 **Budget Settings** | Configurable monthly budget limit with visual progress bar |
+| 🌙 **Dark Theme** | GitHub-dark inspired color scheme |
+| 📱 **Responsive** | Works on desktop, tablet, and mobile |
 
 ## 🚀 Quick Start
 
-### View Online
-Visit the live dashboard: **[yourusername.github.io/agent-monitor](https://yourusername.github.io/agent-monitor/)**
+### Option 1: Open directly
 
-### Run Locally
+Simply open `index.html` in your browser. No build step, no server required.
+
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/agent-monitor.git
-cd agent-monitor
-
-# Open in browser (any static server works)
-python3 -m http.server 8080
-# Then open http://localhost:8080
+open index.html
 ```
 
-Or simply open `index.html` directly in your browser.
+### Option 2: GitHub Pages
+
+Visit the live demo: `https://<username>.github.io/agent-monitor/`
+
+### Option 3: Local server
+
+```bash
+cd agent-monitor
+python3 -m http.server 8080
+# Open http://localhost:8080
+```
 
 ## 🛠 Tech Stack
 
-- **Pure HTML/CSS/JS** — Single file, zero build step
-- **Chart.js 4.4** — Beautiful interactive charts via CDN
-- **GitHub Pages** — Free hosting
-- **No dependencies** — Works offline after first load
+- **HTML5** — Single file, zero dependencies (except CDN)
+- **Chart.js 4.4** — Charts via CDN
+- **CSS3** — Custom properties, grid, flexbox, animations
+- **Vanilla JS** — No frameworks, no build tools
 
-## 📡 API Integration
+## 📁 Project Structure
 
-The dashboard uses simulated data by default. To connect real agent data:
-
-1. Replace the `AGENTS` array in `index.html` with your actual agent data
-2. Implement a backend endpoint that returns agent metrics
-3. Update the `simulateTick()` function to fetch from your API
-
-Example agent data structure:
-```json
-{
-  "id": 1,
-  "name": "My-Agent",
-  "model": "GPT-4o",
-  "status": "active",
-  "calls": 12847,
-  "cost": 142.38,
- "lastActivity": 1715599200000
-}
+```
+agent-monitor/
+├── index.html          # Complete dashboard (single file)
+├── README.md           # This file
+├── LICENSE             # MIT License
+└── .github/
+    └── FUNDING.yml     # GitHub Sponsors config
 ```
 
-## 💡 Why AI Agent Monitor?
+## 🎛 Configuration
 
-AI agents are becoming critical infrastructure, but observability tools for them are scarce. This dashboard fills that gap:
+Budget and alert settings are configurable directly in the UI:
 
-- **Cost control** — Track spending per agent, set budgets, get alerts
-- **Performance monitoring** — Response times, call volumes, error rates
-- **Real-time visibility** — Live activity feed and status indicators
-- **Open source** — Free to use, modify, and extend
+- **Monthly Budget Limit** — Set your spending cap
+- **Alert Threshold** — Get warned at X% of budget
 
 ## 🤝 Contributing
 
-Contributions are welcome! Areas we'd love help with:
+Contributions welcome! Areas of interest:
 
-- [ ] Backend API integration examples
-- [ ] Additional chart types (token usage, latency distribution)
+- [ ] WebSocket integration for real agent data
+- [ ] Export logs to CSV/JSON
+- [ ] Multi-workspace support
 - [ ] Agent detail drill-down pages
 - [ ] Slack/Discord webhook alerts
-- [ ] Multi-user support with authentication
 
 ## 📄 License
 
-[MIT](LICENSE) — use it however you want.
+MIT License — see [LICENSE](LICENSE) for details.
 
-## 💖 Support This Project
+## 🙏 Acknowledgments
 
-If this tool helps you, consider supporting via GitHub Sponsors:
-
-[<img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-ff69b4?logo=github">](https://github.com/sponsors/yourusername)
+Built to fill the AI Agent Observability gap. Inspired by the wave of AI Agent tools dominating GitHub trending.
 
 ---
 
-Built with ❤️ by the open-source AI community.
+*Built with ❤ for the AI engineering community.*
