@@ -3,824 +3,378 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Agent Monitor — Observability Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<title>AI Agent Monitor — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0d1117;
-    --bg-card: #161b22;
-    --bg-card-hover: #1c2333;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --orange: #db6d28;
-    --purple: #bc8cff;
-    --cyan: #39d2c0;
-    --bg-input: #0d1117;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  /* ── Header ── */
-  header {
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(8px);
-  }
-  header .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-  }
-  header .logo .icon {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-  }
-  header .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .status-dot {
-    width: 8px; height: 8px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-  .btn {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  .btn:hover { background: var(--bg-card-hover); border-color: var(--text-muted); }
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .btn-primary:hover { background: #4393e6; }
-
-  /* ── Layout ── */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-
-  /* ── Stats Cards ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    transition: border-color 0.2s;
-  }
-  .stat-card:hover { border-color: var(--accent); }
-  .stat-card .label {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-  .stat-card .value {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  .stat-card .sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-  .stat-card .trend {
-    font-size: 12px;
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .trend-up { color: var(--green); }
-  .trend-down { color: var(--red); }
-
-  /* ── Main Grid ── */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 1024px) {
-    .main-grid { grid-template-columns: 1fr; }
-  }
-
-  /* ── Card ── */
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .card-header h2 {
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-body { padding: 16px 20px; }
-
-  /* ── Agent Table ── */
-  .agent-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .agent-table th {
-    text-align: left;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .agent-table td {
-    padding: 10px 12px;
-    font-size: 13px;
-    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
-  }
-  .agent-table tr:last-child td { border-bottom: none; }
-  .agent-table tr:hover td { background: rgba(88, 166, 255, 0.04); }
-  .agent-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .agent-avatar {
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-  }
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .status-active { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-  .status-idle { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
-  .status-error { background: rgba(248, 81, 73, 0.15); color: var(--red); }
-  .status-dot-sm {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot-active { background: var(--green); animation: pulse 2s infinite; }
-  .dot-idle { background: var(--yellow); }
-  .dot-error { background: var(--red); }
-
-  /* ── Chart ── */
-  .chart-container {
-    position: relative;
-    width: 100%;
-    height: 260px;
-  }
-
-  /* ── Activity Log ── */
-  .activity-log {
-    max-height: 320px;
-    overflow-y: auto;
-  }
-  .activity-log::-webkit-scrollbar { width: 4px; }
-  .activity-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .log-item {
-    display: flex;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(48, 54, 61, 0.3);
-    font-size: 12px;
-  }
-  .log-item:last-child { border-bottom: none; }
-  .log-time {
-    color: var(--text-muted);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-  .log-icon { flex-shrink: 0; }
-  .log-msg { flex: 1; line-height: 1.4; }
-  .log-agent { color: var(--accent); font-weight: 600; }
-
-  /* ── Alert Panel ── */
-  .alert-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  .alert-warning { background: rgba(210, 153, 34, 0.1); border: 1px solid rgba(210, 153, 34, 0.3); }
-  .alert-danger { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.3); }
-  .alert-info { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.3); }
-  .alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-
-  /* ── Settings ── */
-  .setting-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(48, 54, 61, 0.3);
-  }
-  .setting-row:last-child { border-bottom: none; }
-  .setting-label { font-size: 13px; }
-  .setting-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .setting-input {
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    width: 120px;
-    text-align: right;
-  }
-  .setting-input:focus { outline: none; border-color: var(--accent); }
-
-  /* ── Budget Bar ── */
-  .budget-bar-container {
-    margin-top: 16px;
-  }
-  .budget-bar-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-  .budget-bar {
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .budget-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s ease;
-  }
-  .budget-safe { background: var(--green); }
-  .budget-warn { background: var(--yellow); }
-  .budget-danger { background: var(--red); }
-
-  /* ── Footer ── */
-  footer {
-    text-align: center;
-    padding: 24px;
-    color: var(--text-muted);
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-    margin-top: 24px;
-  }
-
-  /* ── Toast ── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 13px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 1000;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  /* ── Responsive ── */
-  @media (max-width: 768px) {
-    .container { padding: 12px; }
-    header { padding: 12px 16px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .agent-table { font-size: 12px; }
-    .agent-table th:nth-child(4), .agent-table td:nth-child(4),
-    .agent-table th:nth-child(5), .agent-table td:nth-child(5) { display: none; }
-  }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--border);margin-bottom:24px}
+header h1{font-size:22px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header .status{display:flex;gap:8px;align-items:center}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;transition:transform .2s}
+.stat:hover{transform:translateY(-2px)}
+.stat .label{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px}
+.stat .value{font-size:26px;font-weight:700;margin-top:6px}
+.stat .value.green{color:var(--green)}.stat .value.red{color:var(--red)}.stat .value.yellow{color:var(--yellow)}.stat .value.purple{color:var(--purple)}
+.stat .sub{font-size:12px;color:#8b949e;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
+.card h2{font-size:15px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.card h2 .badge{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(88,166,255,.2);color:var(--accent)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+th{color:#8b949e;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+tr:hover{background:rgba(88,166,255,.05)}
+.badge{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge.active{background:rgba(63,185,80,.2);color:var(--green)}
+.badge.idle{background:rgba(139,148,158,.2);color:#8b949e}
+.badge.error{background:rgba(248,81,73,.2);color:var(--red)}
+.badge.warning{background:rgba(210,153,34,.2);color:var(--yellow)}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-bar .fill{height:100%;border-radius:3px;transition:width .3s}
+.log{max-height:300px;overflow-y:auto;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;line-height:1.6}
+.log-entry{padding:4px 0;border-bottom:1px solid rgba(48,54,61,.5)}
+.log-entry .time{color:#8b949e;margin-right:8px}
+.log-entry .level{padding:1px 6px;border-radius:3px;font-size:10px;margin-right:6px}
+.log-entry .level.info{background:rgba(88,166,255,.2);color:var(--accent)}
+.log-entry .level.warn{background:rgba(210,153,34,.2);color:var(--yellow)}
+.log-entry .level.error{background:rgba(248,81,73,.2);color:var(--red)}
+.alert{display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;margin-bottom:8px}
+.alert.warning{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.3)}
+.alert.error{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3)}
+.alert-icon{font-size:20px}
+.alert-text{flex:1}
+.alert-text .title{font-weight:600;font-size:13px}
+.alert-text .desc{font-size:12px;color:#8b949e;margin-top:2px}
+.chart-container{position:relative;height:250px}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row label{font-size:13px}
+.settings-row input,.settings-row select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;outline:none;width:150px}
+.settings-row input:focus{border-color:var(--accent)}
+.btn{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:6px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;color:#8b949e}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
 </style>
 </head>
 <body>
-
-<!-- ── Header ── -->
-<header>
-  <div class="logo">
-    <div class="icon">⚡</div>
-    <span>AI Agent Monitor</span>
-  </div>
-  <div class="header-right">
-    <div class="status-dot"></div>
-    <span style="font-size:12px;color:var(--text-muted);" id="connectionStatus">Live</span>
-    <button class="btn btn-primary" onclick="openSettings()">⚙ Settings</button>
-  </div>
-</header>
-
 <div class="container">
+  <header>
+    <div>
+      <h1>🤖 AI Agent Monitor</h1>
+      <p style="color:#8b949e;font-size:13px;margin-top:4px">Real-time observability dashboard for AI agents</p>
+    </div>
+    <div class="status">
+      <div class="status-dot"></div>
+      <span style="font-size:13px;color:#8b949e">Live</span>
+      <button class="btn btn-primary" onclick="refreshData()" style="margin-left:12px">↻ Refresh</button>
+    </div>
+  </header>
 
-  <!-- ── Stats Cards ── -->
-  <div class="stats-grid">
-    <div class="stat-card">
+  <div class="grid">
+    <div class="stat">
       <div class="label">Total Agents</div>
-      <div class="value" id="statTotalAgents">0</div>
-      <div class="sub">registered agents</div>
-      <div class="trend trend-up" id="trendAgents">↑ 2 this week</div>
+      <div class="value" id="totalAgents">3</div>
+      <div class="sub">registered</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Active / Idle</div>
-      <div class="value" id="statActiveIdle" style="font-size:22px;">0 / 0</div>
-      <div class="sub">real-time status</div>
-      <div class="trend trend-up" id="trendActive">↑ 15% utilization</div>
+    <div class="stat">
+      <div class="label">Active Now</div>
+      <div class="value green" id="activeAgents">2</div>
+      <div class="sub">processing tasks</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Total Cost</div>
-      <div class="value" id="statTotalCost">$0.00</div>
-      <div class="sub">this month</div>
-      <div class="trend trend-down" id="trendCost">↓ 8% vs last month</div>
+    <div class="stat">
+      <div class="label">Total Cost (MTD)</div>
+      <div class="value yellow" id="totalCost">$12.47</div>
+      <div class="sub">monthly to date</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Avg Response Time</div>
-      <div class="value" id="statAvgTime">0ms</div>
+    <div class="stat">
+      <div class="label">Avg Response</div>
+      <div class="value purple" id="avgResponse">1.2s</div>
       <div class="sub">last 24 hours</div>
-      <div class="trend trend-up" id="trendTime">↓ 12% faster</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total Calls</div>
+      <div class="value" id="totalCalls">1,247</div>
+      <div class="sub">this month</div>
+    </div>
+    <div class="stat">
+      <div class="label">Error Rate</div>
+      <div class="value red" id="errorRate">0.8%</div>
+      <div class="sub">last 24 hours</div>
     </div>
   </div>
 
-  <!-- ── Main Grid: Agent List + Chart ── -->
-  <div class="main-grid">
-    <div>
-      <!-- Agent List -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-          <h2>🤖 Agent List</h2>
-          <button class="btn" onclick="refreshAgents()">↻ Refresh</button>
-        </div>
-        <div class="card-body" style="padding:0;overflow-x:auto;">
-          <table class="agent-table">
-            <thead>
-              <tr>
-                <th>Agent</th>
-                <th>Status</th>
-                <th>Last Activity</th>
-                <th>Calls</th>
-                <th>Cost</th>
-              </tr>
-            </thead>
-            <tbody id="agentTableBody"></tbody>
-          </table>
-        </div>
-      </div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('agents',this)">🤖 Agents</div>
+    <div class="tab" onclick="showTab('costs',this)">📊 Costs</div>
+    <div class="tab" onclick="showTab('logs',this)">📜 Activity Log</div>
+    <div class="tab" onclick="showTab('alerts',this)">⚠️ Alerts</div>
+    <div class="tab" onclick="showTab('settings',this)">⚙️ Settings</div>
+  </div>
 
-      <!-- Activity Log -->
-      <div class="card">
-        <div class="card-header">
-          <h2>📋 Activity Log</h2>
-          <button class="btn" onclick="clearLog()">Clear</button>
-        </div>
-        <div class="card-body">
-          <div class="activity-log" id="activityLog"></div>
-        </div>
-      </div>
+  <div id="agents" class="tab-content active">
+    <div class="card">
+      <h2>Agent Status <span class="badge">3 agents</span></h2>
+      <table>
+        <thead><tr><th>Agent</th><th>Status</th><th>Last Activity</th><th>Calls</th><th>Cost</th><th>Avg Time</th><th>Health</th></tr></thead>
+        <tbody id="agentTable"></tbody>
+      </table>
     </div>
+  </div>
 
-    <div>
-      <!-- Cost Chart -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-          <h2>📊 Cost Breakdown</h2>
-        </div>
-        <div class="card-body">
-          <div class="chart-container">
-            <canvas id="costChart"></canvas>
-          </div>
-        </div>
+  <div id="costs" class="tab-content">
+    <div class="card">
+      <h2>Cost Breakdown <span class="badge">Daily</span></h2>
+      <div class="chart-container"><canvas id="costChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Cost by Agent</h2>
+      <div class="chart-container"><canvas id="agentCostChart"></canvas></div>
+    </div>
+  </div>
+
+  <div id="logs" class="tab-content">
+    <div class="card">
+      <h2>Activity Log <span class="badge">Live</span></h2>
+      <div class="log" id="activityLog"></div>
+    </div>
+  </div>
+
+  <div id="alerts" class="tab-content">
+    <div class="card">
+      <h2>Active Alerts <span class="badge" id="alertCount">2</span></h2>
+      <div id="alertsList"></div>
+    </div>
+  </div>
+
+  <div id="settings" class="tab-content">
+    <div class="card">
+      <h2>Budget & Alert Settings</h2>
+      <div class="settings-row">
+        <label>Monthly Budget Limit ($)</label>
+        <input type="number" id="budgetLimit" value="50" min="1">
       </div>
-
-      <!-- Response Time Chart -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-          <h2>⏱ Response Time (ms)</h2>
-        </div>
-        <div class="card-body">
-          <div class="chart-container" style="height:200px;">
-            <canvas id="responseChart"></canvas>
-          </div>
-        </div>
+      <div class="settings-row">
+        <label>Daily Budget Limit ($)</label>
+        <input type="number" id="dailyBudget" value="5" min="1">
       </div>
-
-      <!-- Alert Panel -->
-      <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-          <h2>🔔 Alerts</h2>
-          <span id="alertCount" style="font-size:11px;color:var(--text-muted);background:var(--border);padding:2px 8px;border-radius:10px;">0</span>
-        </div>
-        <div class="card-body" id="alertPanel">
-          <div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">No alerts — all systems nominal</div>
-        </div>
+      <div class="settings-row">
+        <label>Cost Alert Threshold (%)</label>
+        <input type="number" id="costThreshold" value="80" min="1" max="100">
       </div>
-
-      <!-- Settings / Budget -->
-      <div class="card" id="settingsCard">
-        <div class="card-header">
-          <h2>💰 Budget Settings</h2>
-        </div>
-        <div class="card-body">
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Monthly Budget Limit</div>
-              <div class="setting-desc">Alert when spending exceeds this</div>
-            </div>
-            <input type="number" class="setting-input" id="budgetInput" value="500" onchange="updateBudget(this.value)">
-          </div>
-          <div class="setting-row">
-            <div>
-              <div class="setting-label">Alert Threshold</div>
-              <div class="setting-desc">Warn at % of budget</div>
-            </div>
-            <input type="number" class="setting-input" id="thresholdInput" value="80" onchange="updateThreshold(this.value)">
-          </div>
-          <div class="budget-bar-container">
-            <div class="budget-bar-label">
-              <span style="color:var(--text-muted);">Spent: <span id="budgetSpent">$0.00</span></span>
-              <span style="color:var(--text-muted);">Limit: <span id="budgetLimit">$500</span></span>
-            </div>
-            <div class="budget-bar">
-              <div class="budget-bar-fill budget-safe" id="budgetBarFill" style="width:0%"></div>
-            </div>
-          </div>
-        </div>
+      <div class="settings-row">
+        <label>Error Rate Alert Threshold (%)</label>
+        <input type="number" id="errorThreshold" value="5" min="1" max="100">
+      </div>
+      <div class="settings-row">
+        <label>Response Time Alert (seconds)</label>
+        <input type="number" id="responseThreshold" value="5" min="1">
+      </div>
+      <div class="settings-row">
+        <label>Data Retention (days)</label>
+        <select id="dataRetention">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+        </select>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        <button class="btn btn-danger" onclick="resetSettings()">🔄 Reset Defaults</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── Footer ── -->
-<footer>
-  AI Agent Monitor v1.0 — Built with ❤ for AI Observability — <span style="color:var(--accent);">github.com/*/agent-monitor</span>
-</footer>
-
-<!-- ── Toast ── -->
-<div class="toast" id="toast"></div>
-
 <script>
-// ═══════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════
+// Sample data — in production, this comes from backend API
 const AGENTS = [
-  { name: 'Hermes-7B',    role: 'General Purpose', color: '#58a6ff', status: 'active',  lastActivity: '2 sec ago',  calls: 12847, cost: 142.30 },
-  { name: 'Codex-Agent',  role: 'Code Review',     color: '#3fb950', status: 'active',  lastActivity: '5 sec ago',  calls: 8932,  cost: 98.75  },
-  { name: 'Memory-Pal',   role: 'Memory Mgmt',     color: '#bc8cff', status: 'idle',    lastActivity: '3 min ago',  calls: 5621,  cost: 67.20  },
-  { name: 'Skill-Runner', role: 'Skill Execution', color: '#d29922', status: 'active',  lastActivity: '1 sec ago',  calls: 15203, cost: 178.50 },
-  { name: 'Review-Bot',   role: 'PR Review',       color: '#f85149', status: 'error',   lastActivity: '12 min ago', calls: 3401,  cost: 45.80  },
-  { name: 'Data-Miner',   role: 'Data Analysis',   color: '#39d2c0', status: 'idle',    lastActivity: '8 min ago',  calls: 7890,  cost: 89.15  },
-  { name: 'Chat-Model',   role: 'Conversation',    color: '#db6d28', status: 'active',  lastActivity: '0 sec ago',  calls: 21034, cost: 245.60 },
-  { name: 'Test-Gen',     role: 'Test Generation', color: '#58a6ff', status: 'idle',    lastActivity: '15 min ago', calls: 2108,  cost: 28.40  },
+  {name:'Hermes',status:'active',lastActivity:'2 min ago',calls:523,cost:5.42,avgTime:0.8,health:98},
+  {name:'Gardvori',status:'active',lastActivity:'5 min ago',calls:412,cost:3.89,avgTime:1.4,health:95},
+  {name:'Armodeus',status:'idle',lastActivity:'15 min ago',calls:312,cost:3.16,avgTime:1.2,health:92},
 ];
 
-const COST_HISTORY = {
-  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-  data: [312, 428, 389, 521],
+const LOGS = [
+  {time:'12:32:15',level:'info',msg:'Hermes: Completed CLI tool build — agent-cost-tracker'},
+  {time:'12:28:42',level:'info',msg:'Gardvori: Pushed wallet-tracker to GitHub'},
+  {time:'12:25:10',level:'warn',msg:'Armodeus: GitHub API rate limit approaching (4290/5000)'},
+  {time:'12:20:33',level:'info',msg:'Hermes: Audit report generated for 5 projects'},
+  {time:'12:15:08',level:'error',msg:'Gardvori: OpenRouter API key expired — switched to fallback'},
+  {time:'12:10:45',level:'info',msg:'Armodeus: Started web builder cron job'},
+  {time:'12:05:22',level:'info',msg:'Hermes: Spawned Armodeus subagent for pomodoro-timer'},
+  {time:'12:00:00',level:'info',msg:'System: Daily reset — all counters cleared'},
+];
+
+const ALERTS = [
+  {type:'warning',icon:'⚠️',title:'Budget 80% Used',desc:'Monthly budget $50 — $12.47 spent (25%). At current rate, budget will be exhausted in ~20 days.'},
+  {type:'warning',icon:'⚠️',title:'High Error Rate — Gardvori',desc:'Gardvori error rate is 2.1% (threshold: 5%). Monitor for degradation.'},
+];
+
+const COST_DATA = {
+  labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+  daily:[1.2, 2.8, 1.5, 3.1, 2.4, 0.8, 1.6],
+  agents:{Hermes:5.42, Gardvori:3.89, Armodeus:3.16}
 };
 
-const RESPONSE_HISTORY = {
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  data: [340, 290, 310, 275, 250, 220, 205],
-};
+let costChart, agentCostChart;
 
-let alerts = [];
-let budgetLimit = 500;
-let alertThreshold = 80;
-
-// ═══════════════════════════════════════════
-// CHARTS
-// ═══════════════════════════════════════════
-function initCharts() {
-  Chart.defaults.color = '#8b949e';
-  Chart.defaults.borderColor = '#30363d';
-
-  // Cost Doughnut
-  new Chart(document.getElementById('costChart'), {
-    type: 'doughnut',
-    data: {
-      labels: AGENTS.map(a => a.name),
-      datasets: [{
-        data: AGENTS.map(a => a.cost),
-        backgroundColor: AGENTS.map(a => a.color + 'cc'),
-        borderColor: AGENTS.map(a => a.color),
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'right',
-          labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
-        }
-      },
-      cutout: '60%',
-    }
-  });
-
-  // Response Time Line
-  new Chart(document.getElementById('responseChart'), {
-    type: 'line',
-    data: {
-      labels: RESPONSE_HISTORY.labels,
-      datasets: [{
-        label: 'Avg ms',
-        data: RESPONSE_HISTORY.data,
-        borderColor: '#58a6ff',
-        backgroundColor: 'rgba(88,166,255,0.1)',
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: false, grid: { color: 'rgba(48,54,61,0.5)' } },
-        x: { grid: { display: false } }
-      }
-    }
-  });
+function init(){
+  renderAgents();
+  renderLogs();
+  renderAlerts();
+  initCharts();
+  showTab('agents', document.querySelector('.tab'));
 }
 
-// ═══════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════
-function renderStats() {
-  const total = AGENTS.length;
-  const active = AGENTS.filter(a => a.status === 'active').length;
-  const idle = AGENTS.filter(a => a.status === 'idle').length;
-  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
-  const avgTime = Math.round(RESPONSE_HISTORY.data.reduce((s, v) => s + v, 0) / RESPONSE_HISTORY.data.length);
-
-  document.getElementById('statTotalAgents').textContent = total;
-  document.getElementById('statActiveIdle').innerHTML = `<span style="color:var(--green)">${active}</span> / <span style="color:var(--yellow)">${idle}</span>`;
-  document.getElementById('statTotalCost').textContent = '$' + totalCost.toFixed(2);
-  document.getElementById('statAvgTime').textContent = avgTime + 'ms';
-
-  updateBudgetBar(totalCost);
-}
-
-function renderAgents() {
-  const tbody = document.getElementById('agentTableBody');
+function renderAgents(){
+  const tbody = document.getElementById('agentTable');
   tbody.innerHTML = AGENTS.map(a => `
     <tr>
-      <td>
-        <div class="agent-name">
-          <div class="agent-avatar" style="background:${a.color}">${a.name[0]}</div>
-          <div>
-            <div style="font-weight:600">${a.name}</div>
-            <div style="font-size:11px;color:var(--text-muted)">${a.role}</div>
-          </div>
-        </div>
-      </td>
-      <td><span class="status-badge status-${a.status}"><span class="status-dot-sm dot-${a.status}"></span>${a.status}</span></td>
-      <td style="color:var(--text-muted)">${a.lastActivity}</td>
+      <td><strong>${a.name}</strong></td>
+      <td><span class="badge ${a.status}">${a.status.toUpperCase()}</span></td>
+      <td>${a.lastActivity}</td>
       <td>${a.calls.toLocaleString()}</td>
-      <td style="font-weight:600">$${a.cost.toFixed(2)}</td>
+      <td>$${a.cost.toFixed(2)}</td>
+      <td>${a.avgTime}s</td>
+      <td>
+        <div class="progress-bar">
+          <div class="fill" style="width:${a.health}%;background:${a.health>90?'var(--green)':a.health>70?'var(--yellow)':'var(--red)'}"></div>
+        </div>
+        <span style="font-size:11px;color:#8b949e">${a.health}%</span>
+      </td>
     </tr>
   `).join('');
 }
 
-function renderAlerts() {
-  const panel = document.getElementById('alertPanel');
-  document.getElementById('alertCount').textContent = alerts.length;
-
-  if (alerts.length === 0) {
-    panel.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:16px;">No alerts — all systems nominal</div>';
-    return;
-  }
-  panel.innerHTML = alerts.map(a => `
-    <div class="alert-item alert-${a.type}">
-      <span class="alert-icon">${a.icon}</span>
-      <div>${a.msg}</div>
+function renderLogs(){
+  const logEl = document.getElementById('activityLog');
+  logEl.innerHTML = LOGS.map(l => `
+    <div class="log-entry">
+      <span class="time">${l.time}</span>
+      <span class="level ${l.level}">${l.level.toUpperCase()}</span>
+      <span>${l.msg}</span>
     </div>
   `).join('');
 }
 
-function addLog(icon, agent, msg) {
-  const log = document.getElementById('activityLog');
-  const now = new Date();
-  const time = now.toLocaleTimeString('en-US', { hour12: false });
-  const item = document.createElement('div');
-  item.className = 'log-item';
-  item.innerHTML = `
-    <span class="log-time">${time}</span>
-    <span class="log-icon">${icon}</span>
-    <span class="log-msg"><span class="log-agent">${agent}</span> — ${msg}</span>
-  `;
-  log.insertBefore(item, log.firstChild);
-  if (log.children.length > 50) log.removeChild(log.lastChild);
+function renderAlerts(){
+  const alertsEl = document.getElementById('alertsList');
+  alertsEl.innerHTML = ALERTS.map(a => `
+    <div class="alert ${a.type}">
+      <div class="alert-icon">${a.icon}</div>
+      <div class="alert-text">
+        <div class="title">${a.title}</div>
+        <div class="desc">${a.desc}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
-function clearLog() {
-  document.getElementById('activityLog').innerHTML = '';
-  addLog('🧹', 'System', 'Activity log cleared');
-}
-
-// ═══════════════════════════════════════════
-// ALERTS
-// ═══════════════════════════════════════════
-function checkAlerts() {
-  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
-  const pct = (totalCost / budgetLimit) * 100;
-
-  alerts = [];
-
-  if (pct >= alertThreshold && pct < 100) {
-    alerts.push({ type: 'warning', icon: '⚠️', msg: `Budget at ${pct.toFixed(0)}% — $${totalCost.toFixed(2)} of $${budgetLimit}` });
-  }
-  if (pct >= 100) {
-    alerts.push({ type: 'danger', icon: '🚨', msg: `Budget exceeded! $${totalCost.toFixed(2)} of $${budgetLimit}` });
+function initCharts(){
+  if(typeof Chart === 'undefined'){
+    document.querySelectorAll('.chart-container').forEach(el => {
+      el.innerHTML = '<p style="color:#8b949e;text-align:center;padding:40px">Chart.js loading...</p>';
+    });
+    return;
   }
 
-  AGENTS.filter(a => a.status === 'error').forEach(a => {
-    alerts.push({ type: 'danger', icon: '🔴', msg: `<b>${a.name}</b> is in error state — last seen ${a.lastActivity}` });
+  const costCtx = document.getElementById('costChart').getContext('2d');
+  costChart = new Chart(costCtx, {
+    type:'bar',
+    data:{
+      labels:COST_DATA.labels,
+      datasets:[{
+        label:'Daily Cost ($)',
+        data:COST_DATA.daily,
+        backgroundColor:'rgba(88,166,255,0.6)',
+        borderColor:'var(--accent)',
+        borderWidth:1,
+        borderRadius:4
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#c9d1d9'}}},
+      scales:{
+        x:{ticks:{color:'#8b949e'},grid:{color:'rgba(48,54,61,.5)'}},
+        y:{ticks:{color:'#8b949e'},grid:{color:'rgba(48,54,61,.5)'},beginAtZero:true}
+      }
+    }
   });
 
-  const highCost = AGENTS.filter(a => a.cost > 150);
-  if (highCost.length > 0) {
-    alerts.push({ type: 'info', icon: '💡', msg: `${highCost.length} agent(s) exceeded $150 this period` });
-  }
-
-  renderAlerts();
-}
-
-// ═══════════════════════════════════════════
-// BUDGET
-// ═══════════════════════════════════════════
-function updateBudget(val) {
-  budgetLimit = parseFloat(val) || 500;
-  document.getElementById('budgetLimit').textContent = '$' + budgetLimit;
-  const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0);
-  updateBudgetBar(totalCost);
-  checkAlerts();
-  showToast(`Budget limit set to $${budgetLimit}`);
-}
-
-function updateThreshold(val) {
-  alertThreshold = parseFloat(val) || 80;
-  checkAlerts();
-  showToast(`Alert threshold set to ${alertThreshold}%`);
-}
-
-function updateBudgetBar(totalCost) {
-  const pct = Math.min((totalCost / budgetLimit) * 100, 100);
-  const fill = document.getElementById('budgetBarFill');
-  document.getElementById('budgetSpent').textContent = '$' + totalCost.toFixed(2);
-  fill.style.width = pct + '%';
-  fill.className = 'budget-bar-fill ' + (pct >= 100 ? 'budget-danger' : pct >= alertThreshold ? 'budget-warn' : 'budget-safe');
-}
-
-// ═══════════════════════════════════════════
-// SIMULATION
-// ═══════════════════════════════════════════
-function simulateActivity() {
-  const actions = [
-    { icon: '✅', msg: 'completed task successfully' },
-    { icon: '🔄', msg: 'processing new request' },
-    { icon: '📤', msg: 'sent API response' },
-    { icon: '🧠', msg: 'updated context memory' },
-    { icon: '🔍', msg: 'analyzed input data' },
-    { icon: '📊', msg: 'generated report' },
-    { icon: '💬', msg: 'handled user message' },
-    { icon: '🔧', msg: 'executed tool call' },
-  ];
-
-  const agent = AGENTS[Math.floor(Math.random() * AGENTS.length)];
-  const action = actions[Math.floor(Math.random() * actions.length)];
-  addLog(action.icon, agent.name, action.msg);
-
-  // Randomly update last activity
-  agent.lastActivity = Math.floor(Math.random() * 5) + ' sec ago';
-}
-
-function refreshAgents() {
-  AGENTS.forEach(a => {
-    const r = Math.random();
-    if (r < 0.6) a.status = 'active';
-    else if (r < 0.9) a.status = 'idle';
-    else a.status = 'error';
-    a.calls += Math.floor(Math.random() * 10);
-    a.cost += Math.random() * 2;
+  const agentCtx = document.getElementById('agentCostChart').getContext('2d');
+  agentCostChart = new Chart(agentCtx, {
+    type:'doughnut',
+    data:{
+      labels:Object.keys(COST_DATA.agents),
+      datasets:[{
+        data:Object.values(COST_DATA.agents),
+        backgroundColor:['#58a6ff','#3fb950','#bc8cff'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#c9d1d9',padding:16}}}
+    }
   });
-  renderStats();
-  renderAgents();
-  checkAlerts();
-  showToast('Agent data refreshed');
 }
 
-// ═══════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function showTab(tab, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(tab).classList.add('active');
 }
 
-function openSettings() {
-  document.getElementById('settingsCard').scrollIntoView({ behavior: 'smooth' });
-  showToast('Settings panel');
+function refreshData(){
+  // Simulate data refresh
+  document.querySelectorAll('.stat .value').forEach(el => {
+    el.style.opacity = 0.5;
+    setTimeout(() => { el.style.opacity = 1; }, 500);
+  });
 }
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-function init() {
-  initCharts();
-  renderStats();
-  renderAgents();
-  checkAlerts();
-
-  // Seed initial logs
-  addLog('🚀', 'System', 'AI Agent Monitor initialized');
-  addLog('📡', 'System', 'Connected to agent orchestrator');
-  addLog('💰', 'System', `Budget limit set to $${budgetLimit}, threshold ${alertThreshold}%`);
-
-  // Simulate live activity every 3s
-  setInterval(simulateActivity, 3000);
-
-  // Refresh stats every 10s
-  setInterval(() => {
-    AGENTS.forEach(a => { a.cost += Math.random() * 0.5; });
-    renderStats();
-    checkAlerts();
-  }, 10000);
+function saveSettings(){
+  const settings = {
+    budgetLimit: document.getElementById('budgetLimit').value,
+    dailyBudget: document.getElementById('dailyBudget').value,
+    costThreshold: document.getElementById('costThreshold').value,
+    errorThreshold: document.getElementById('errorThreshold').value,
+    responseThreshold: document.getElementById('responseThreshold').value,
+    dataRetention: document.getElementById('dataRetention').value,
+  };
+  localStorage.setItem('agentMonitorSettings', JSON.stringify(settings));
+  alert('✅ Settings saved!');
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function resetSettings(){
+  localStorage.removeItem('agentMonitorSettings');
+  document.getElementById('budgetLimit').value = 50;
+  document.getElementById('dailyBudget').value = 5;
+  document.getElementById('costThreshold').value = 80;
+  document.getElementById('errorThreshold').value = 5;
+  document.getElementById('responseThreshold').value = 5;
+  document.getElementById('dataRetention').value = 30;
+  alert('✅ Settings reset to defaults!');
+}
+
+// Auto-refresh every 30s
+setInterval(refreshData, 30000);
+init();
 </script>
 </body>
 </html>

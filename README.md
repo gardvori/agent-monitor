@@ -1,90 +1,44 @@
-# ⚡ AI Agent Monitor
+# AI Agent Monitor
 
-> **Observability dashboard for AI agent activity** — track costs, response times, agent status, and alerts in real time.
+Real-time observability dashboard for AI agents. Monitor costs, performance, and health of all your AI agents in one place.
 
-![Dark Theme](https://img.shields.io/badge/theme-dark-1a1a2e?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
+## Features
 
-## ✨ Features
+- 🤖 **Agent Overview** — total agents, active/idle status, health scores
+- 💰 **Cost Tracking** — daily/weekly/monthly spending per agent with charts
+- 📜 **Activity Log** — real-time log of all agent activities
+- ⚠️ **Alerts** — budget warnings, error rate alerts, response time alerts
+- ⚙️ **Settings** — configurable budget limits and alert thresholds
+- 📊 **Charts** — cost breakdown and agent comparison (Chart.js)
+- 🌙 **Dark Theme** — easy on the eyes
+- 📱 **Responsive** — works on desktop and mobile
 
-| Feature | Description |
-|---------|-------------|
-| 📊 **Dashboard** | Total agents, active/idle count, total cost, avg response time |
-| 🤖 **Agent List** | Name, status, last activity, call count, cost per agent |
-| 📈 **Cost Chart** | Interactive doughnut chart (Chart.js) showing cost breakdown |
-| ⏱ **Response Time Chart** | Line chart tracking avg response time over days |
-| 📋 **Activity Log** | Real-time streaming log of agent actions |
-| 🔔 **Alert Panel** | Budget warnings, error state alerts, high-cost notifications |
-| 💰 **Budget Settings** | Configurable monthly budget limit with visual progress bar |
-| 🌙 **Dark Theme** | GitHub-dark inspired color scheme |
-| 📱 **Responsive** | Works on desktop, tablet, and mobile |
+## Live Demo
 
-## 🚀 Quick Start
+https://gardvori.github.io/agent-monitor/
 
-### Option 1: Open directly
+## Screenshot
 
-Simply open `index.html` in your browser. No build step, no server required.
+![Dashboard](https://via.placeholder.com/800x400/0d1117/58a6ff?text=AI+Agent+Monitor+Dashboard)
 
-```bash
-open index.html
-```
+## Usage
 
-### Option 2: GitHub Pages
+Open `index.html` in any modern browser. No server required — runs entirely in the browser.
 
-Visit the live demo: `https://<username>.github.io/agent-monitor/`
+For production use, connect to your agent backend API to feed real-time data.
 
-### Option 3: Local server
+## Monetization
 
-```bash
-cd agent-monitor
-python3 -m http.server 8080
-# Open http://localhost:8080
-```
+- **GitHub Sponsors** — support development
+- **Premium features** — real-time API integration, multi-user, export
+- **White-label** — customizable for enterprise use
 
-## 🛠 Tech Stack
+## Tech
 
-- **HTML5** — Single file, zero dependencies (except CDN)
-- **Chart.js 4.4** — Charts via CDN
-- **CSS3** — Custom properties, grid, flexbox, animations
-- **Vanilla JS** — No frameworks, no build tools
+- Pure HTML/CSS/JS — zero dependencies (Chart.js via CDN)
+- No build tools required
+- Works offline after initial load
 
-## 📁 Project Structure
+## License
 
-```
-agent-monitor/
-├── index.html          # Complete dashboard (single file)
-├── README.md           # This file
-├── LICENSE             # MIT License
-└── .github/
-    └── FUNDING.yml     # GitHub Sponsors config
-```
-
-## 🎛 Configuration
-
-Budget and alert settings are configurable directly in the UI:
-
-- **Monthly Budget Limit** — Set your spending cap
-- **Alert Threshold** — Get warned at X% of budget
-
-## 🤝 Contributing
-
-Contributions welcome! Areas of interest:
-
-- [ ] WebSocket integration for real agent data
-- [ ] Export logs to CSV/JSON
-- [ ] Multi-workspace support
-- [ ] Agent detail drill-down pages
-- [ ] Slack/Discord webhook alerts
-
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
-## 🙏 Acknowledgments
-
-Built to fill the AI Agent Observability gap. Inspired by the wave of AI Agent tools dominating GitHub trending.
-
----
-
-*Built with ❤ for the AI engineering community.*
+MIT
