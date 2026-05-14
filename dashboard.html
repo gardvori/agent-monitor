@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Monitor - Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px}
+h1{font-size:24px;margin-bottom:24px;color:var(--accent)}
+h2{font-size:16px;margin-bottom:12px;color:var(--text);opacity:.8;text-transform:uppercase;letter-spacing:1px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.metric{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.metric:last-child{border-bottom:none}
+.metric-label{font-size:13px;opacity:.7}
+.metric-value{font-size:18px;font-weight:600}
+.status-online{color:var(--green)}
+.status-offline{color:var(--red)}
+.status-warning{color:var(--yellow)}
+.bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-green{background:var(--green)}
+.bar-yellow{background:var(--yellow)}
+.bar-red{background:var(--red)}
+.agent-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.agent-row:last-child{border-bottom:none}
+.agent-name{font-weight:600;font-size:14px}
+.agent-meta{font-size:12px;opacity:.7}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(63,185,80,.2);color:var(--green)}
+.badge-red{background:rgba(248,81,73,.2);color:var(--red)}
+.badge-yellow{background:rgba(210,153,34,.2);color:var(--yellow)}
+.error-item{font-size:12px;padding:6px 0;border-bottom:1px solid var(--border);opacity:.8;font-family:monospace}
+.timestamp{text-align:center;opacity:.5;font-size:12px;margin-top:24px}
+</style>
+</head>
+<body>
+<h1>&#129302; Agent Monitor</h1>
+<div id="content">Loading...</div>
+<div class="timestamp" id="ts"></div>
+<script>
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+}
+function metricRow(label, value) {
+  const d = el('div', 'metric');
+  d.innerHTML = '<span class="metric-label">' + label + '</span><span class="metric-value">' + value + '</span>';
+  return d;
+}
+function bar(pct, cls) {
+  const d = el('div', 'bar');
+  const f = el('div', 'bar-fill ' + cls);
+  f.style.width = pct + '%';
+  d.appendChild(f);
+  return d;
+}
+function agentRow(name, status, meta, badgeCls) {
+  const d = el('div', 'agent-row');
+  d.innerHTML = '<div><div class="agent-name">' + name + '</div><div class="agent-meta">' + meta + '</div></div>' +
+    '<span class="badge ' + badgeCls + '">' + status + '</span>';
+  return d;
+}
+async function load() {
+  try {
+    const r = await fetch('/api/metrics');
+    const d = await r.json();
+    const g = el('div', 'grid');
+    
+    // System
+    const sys = el('div', 'card');
+    sys.appendChild(el('h2', null, 'System'));
+    const sm = d.system || {};
+    sys.appendChild(metricRow('CPU Load', sm.cpu_load_1m || '?'));
+    sys.appendChild(metricRow('Memory', (sm.memory_used_mb||'?') + ' / ' + (sm.memory_total_mb||'?') + ' MB'));
+    const mpct = sm.memory_usage_pct || 0;
+    sys.appendChild(bar(mpct, mpct < 70 ? 'bar-green' : mpct < 90 ? 'bar-yellow' : 'bar-red'));
+    sys.appendChild(metricRow('Disk', (sm.disk_used||'?') + ' / ' + (sm.disk_total||'?')));
+    const dpct = sm.disk_usage_pct || 0;
+    sys.appendChild(bar(dpct, dpct < 70 ? 'bar-green' : dpct < 90 ? 'bar-yellow' : 'bar-red'));
+    sys.appendChild(metricRow('Uptime', (sm.uptime_hours||'?') + 'h'));
+    g.appendChild(sys);
+    
+    // Agents
+    const ac = el('div', 'card');
+    ac.appendChild(el('h2', null, 'PM2 Agents'));
+    (d.agents || []).forEach(a => {
+      const bc = a.status === 'online' ? 'badge-green' : 'badge-red';
+      const meta = 'PID: ' + a.pid + ' | Restarts: ' + a.restarts + ' | ' + (a.memory_mb||0) + 'MB | CPU: ' + (a.cpu_pct||0) + '%';
+      ac.appendChild(agentRow(a.name, a.status, meta, bc));
+    });
+    if (!d.agents || !d.agents.length) ac.appendChild(el('div', 'agent-row', '<span class="agent-meta">No PM2 agents</span>'));
+    g.appendChild(ac);
+    
+    // Cron
+    const cc = el('div', 'card');
+    cc.appendChild(el('h2', null, 'Cron Jobs'));
+    (d.cron || []).forEach(j => {
+      const bc = j.last_status === 'ok' ? 'badge-green' : j.last_status === 'error' ? 'badge-red' : 'badge-yellow';
+      const en = j.enabled ? '&#10003;' : '&#10007;';
+      const meta = j.schedule + ' | Last: ' + (j.last_run || 'never');
+      cc.appendChild(agentRow(en + ' ' + j.name, j.last_status || '?', meta, bc));
+    });
+    if (!d.cron || !d.cron.length) cc.appendChild(el('div', 'agent-row', '<span class="agent-meta">No cron jobs</span>'));
+    g.appendChild(cc);
+    
+    document.getElementById('content').innerHTML = '';
+    document.getElementById('content').appendChild(g);
+    document.getElementById('ts').textContent = 'Updated: ' + new Date().toLocaleString() + ' | Auto-refresh: 30s';
+  } catch(e) {
+    document.getElementById('content').innerHTML = '<div class="card"><h2>Error</h2><p>' + e.message + '</p></div>';
+  }
+}
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>

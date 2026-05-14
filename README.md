@@ -1,43 +1,53 @@
-# AI Agent Monitor
+# 🖥️ agent-monitor
 
-Real-time observability dashboard for AI agents. Monitor costs, performance, and health of all your AI agents in one place.
+Observability dashboard for AI agents. Track activity, costs, performance, and alerts in real-time.
 
 ## Features
 
-- 🤖 **Agent Overview** — total agents, active/idle status, health scores
-- 💰 **Cost Tracking** — daily/weekly/monthly spending per agent with charts
-- 📜 **Activity Log** — real-time log of all agent activities
-- ⚠️ **Alerts** — budget warnings, error rate alerts, response time alerts
-- ⚙️ **Settings** — configurable budget limits and alert thresholds
-- 📊 **Charts** — cost breakdown and agent comparison (Chart.js)
-- 🌙 **Dark Theme** — easy on the eyes
-- 📱 **Responsive** — works on desktop and mobile
+- **Real-Time Dashboard** — Web-based dashboard with auto-refresh (30s)
+- **System Metrics** — CPU, memory, disk, uptime
+- **PM2 Agent Monitoring** — Status, memory, CPU, restart count per agent
+- **Cron Job Monitoring** — Status, last run, next run for all cron jobs
+- **Error Log Viewer** — Recent errors from PM2 logs
+- **JSON API** — `/api/metrics` endpoint for programmatic access
+- **Zero Dependencies** — Pure Python stdlib
 
-## Live Demo
+## Installation
 
-https://gardvori.github.io/agent-monitor/
-
-## Screenshot
-
-![Dashboard](https://via.placeholder.com/800x400/0d1117/58a6ff?text=AI+Agent+Monitor+Dashboard)
+```bash
+git clone https://github.com/gardvori/agent-monitor.git
+cd agent-monitor
+```
 
 ## Usage
 
-Open `index.html` in any modern browser. No server required — runs entirely in the browser.
+```bash
+# Start dashboard server
+python3 agent_monitor.py start
 
-For production use, connect to your agent backend API to feed real-time data.
+# Start on custom port
+python3 agent_monitor.py start --port 8080
 
-## Monetization
+# Take a snapshot
+python3 agent_monitor.py snapshot
 
-- **GitHub Sponsors** — support development
-- **Premium features** — real-time API integration, multi-user, export
-- **White-label** — customizable for enterprise use
+# JSON output
+python3 agent_monitor.py snapshot --json
+```
 
-## Tech
+## Dashboard
 
-- Pure HTML/CSS/JS — zero dependencies (Chart.js via CDN)
-- No build tools required
-- Works offline after initial load
+Open `http://<server-ip>:9191` in your browser.
+
+![Dashboard](https://via.placeholder.com/800x400/0d1117/58a6ff?text=Agent+Monitor+Dashboard)
+
+## API
+
+```
+GET /api/metrics
+```
+
+Returns JSON with system, agents, and cron metrics.
 
 ## License
 
